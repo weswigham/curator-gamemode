@@ -1,0 +1,35 @@
+@include "base.fgd"
+@include "halflife2.fgd"
+@include "garrysmod.fgd"
+
+@SolidClass = trigger_event : "Event Trigger. A thief can press use within this volue and 'use' this."
+[
+	RequiredItems(string) : "Required Items" : "" : "Separated by ;'s ex: 'crowbar; welder; lockpick'"
+	
+	input ValidActivate(void) : "This has been activated."
+]
+
+@SolidClass = trigger_safehouse : "Safehouse Trigger. Place this where you want the safehouse to be."
+[	
+	input ArtDeposited(void) : "Some art was placed in the safehouse."
+	input JunkDeposited(void) : "Some junk was put in the safe house."
+]
+
+@PointClass base(Targetname, Origin) = info_curator_start : "Defines Crator Start Pos"
+[	
+]
+
+@PointClass base(Targetname, Origin) = info_art_spawn : "Defines An Art Spawn Pos"
+[
+]
+
+@PointClass base(Targetname, Origin) = info_junk_spawn : "Defines A Junk Spawn Pos"
+[
+]
+
+@PointClass base(Targetname, Origin) = info_round_info : "Sends out round info."
+[
+	input RoundStart(void) : "The has started."
+	input RoundEnd(void) : "The has ended."
+]
+

@@ -1,4 +1,6 @@
 RoundTimer = {}
+RoundTimer.RoundTime = 600
+RoundTimer.GraceTime = 30
 RoundTimer.CurrentTime = 0
 
 function RoundTimer.TimerUpdate(msg)

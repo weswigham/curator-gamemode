@@ -32,6 +32,7 @@ function RoundTimer.SlowThink()
 			RoundTimer.EndRound()
 		else
 			RoundTimer.StartRound()
+			GAMEMODE:ResetMap()
 		end
 	end
 end
@@ -40,4 +41,8 @@ function RoundTimer.InformClient() --This is better than just using a global var
 	umsg.Start("TimerUpdate", player.GetAll())
 		umsg.Long(RoundTimer.CurrentTime)
 	umsg.End()
+end 
+
+function RoundTimer.GetCurrentTime()
+	return RoundTimer.CurrentTime
 end 

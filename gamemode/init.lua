@@ -109,17 +109,35 @@ function GM:Think()
 end 
 
 function GM:RespawnEveryone()
-	if player.GetAll() != nil then
-		for k,v in pairs(player.GetAll()) do
-			v:KillSilent()
-		end
+	for k,v in pairs(player.GetAll()) do
+		v:KillSilent()
 	end
+end
+
+function GM:ResetMap()
+	game.CleanUpMap()
+end
+
+function GM:RoundBegin()
+
+end
+
+function GM:RoundEnd()
+
 end
 
 hook.Add("RoundStarted","CuratorRoundStart",function() 
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do
 		v:Input("RoundStart")
 	end
+	GM:RoundBegin()
+end)
+
+hook.Add("GraceTime","CuratorGraceTime", function()
+	for k,v in ipairs(ents.FindByClass("info_round_info")) do
+		v:Input("RoundEnd")
+	end
+	GM:RoundEnd()
 end)
 
 --Redistributable datastream fix.

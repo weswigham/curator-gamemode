@@ -13,35 +13,41 @@ function GM:Initialize()
 
 end
 
-
-function PointOn2DBezierCurve(dis,pt1,pt2,pt3) --my poor attempt at a bezier curve algorthm. I think dis is distance along the curve, pt1 is start, pt2 is control, and pt3 is end.
-	local out1 = ((1-dis)^2)*pt1.x+2*(1-dis)*dis*pt2.x+(dis^2)*pt3.x
-	local out2 = ((1-dis)^2)*pt1.y+2*(1-dis)*dis*pt2.y+(dis^2)*pt3.y
-	return out1,out2
-end
-
-function TableOfPointsOnCurve(col,w,h,itier,dist,pt1,pt2,pt3) --Color, width, height, iterations(smoothness), distance(is a part of iterations), start point, control point, end point
-	local outtable = {}
-	local start = 1/itier
-	dist = math.Clamp(dist,1,itier)
-	for i=1,dist do
-		local x,y = PointOn2DBezierCurve(start,pt1,pt2,pt3)
-		local tbl = {}
-		tbl["x"] = x
-		tbl["y"] = y
-		tbl["w"] = w
-		tbl["h"] = h
-		tbl["color"] = col
-		tbl["texture"] = draw.NoTexture()
-		table.insert(outtable,tbl)
-		start = start + 1/itier
-	end
-	return outtable
-end
+local Font = "HUDNumber5"
+local BGCol = Color(0,0,0,150)
+local MoneyCol = Color(100,200,100,250)
+local TimeCol = Color(200,200,100,250)
+local StartPt = Bezier.2DPoint(ScrW(),ScrH()-(ScrH()/10))
+local EndPt = Bezier.2DPoint(ScrW(),ScrH()-(ScrH()/10))
+local ControlPt = Bezier.2DPoint(ScrW()-(ScrW()/5),ScrH()/2)
 
 function GM:HUDPaint()
 
 	GAMEMODE:HUDDrawTargetID()
-	GAMEMODE:HUDDrawPickupHistory()
-	GAMEMODE:DrawDeathNotice( 0.85, 0.1 )
+	GAMEMODE:DrawDeathNotice( 0.9, 0.1 )
+	
+	local Time = string.ToMinutesSeconds(RoundTimer.GetCurrentTime())
+	local Muny = "$"..math.floor(LocalPlayer():GetNWInt("money"))
+	
+	surface.SetFont(Font)
+	local offx,offy = surface.GetTextSize(Muny)
+	
+	draw.WordBox( 10, ScrW()-(offx+20),ScrH()-(offy+20), Muny, Font, BGCol, MoneyCol)
+	
+	local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,20,1,500,500,StartPt,ControlPt,EndPt)
+	for k,v in pairs(stufftodraw) do
+		draw.TexturedQuad(v)
+	end
+	
+	local str = "Round Time Remaining- "..Time
+	local offx,offy = surface.GetTextSize(str)
+	
+	draw.WordBox( 10, ScrW()-(offx+20), offy+20, str, Font, BGCol, TimeCol)
+
+	
+	local dist = (RoundTimer.GetCurrentTime()/RoundTimer.RoundTime)*500
+	local stufftodraw2 = Bezier.TableOfPointsOnQuadraticCurve(TimeCol,10,1,500,dist,StartPt,ControlPt,EndPt)
+	for k,v in pairs(stufftodraw2) do
+		draw.TexturedQuad(v)
+	end
 end

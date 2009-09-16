@@ -1,30 +1,64 @@
 include( 'shared.lua' )
 
-for _, file in ipairs( file.Find( "../lua/" .. GM.Folder:gsub( "gamemodes/", "" ) .. "/gamemode/modules/client/*.lua" ) ) do
-	include( "modules/client/" .. file )
-end
+if not SinglePlayer() and not LocalPlayer():IsListenServerHost() then
+	for _, file in ipairs( file.Find( "../lua/"..GM.Folder:gsub( "gamemodes/", "" ).."/gamemode/modules/client/*.lua" ) ) do
+		include( "modules/client/"..file )
+	end
 
-for _, file in ipairs( file.Find( "../lua/" .. GM.Folder:gsub( "gamemodes/", "" ) .. "/gamemode/modules/shared/*.lua" ) ) do
-	include( "modules/shared/" .. file )
-end	
+	for _, file in ipairs( file.Find( "../lua/"..GM.Folder:gsub( "gamemodes/", "" ).."/gamemode/modules/shared/*.lua" ) ) do
+		include( "modules/shared/"..file )
+	end	
+else
+	for _, file in ipairs( file.Find( "../"..GM.Folder.."/gamemode/modules/client/*.lua" ) ) do
+		include( "modules/client/"..file )
+	end
+
+	for _, file in ipairs( file.Find( "../"..GM.Folder.."/gamemode/modules/shared/*.lua" ) ) do
+		include( "modules/shared/"..file )
+	end	
+end
 
 
 function GM:Initialize()
 
 end
 
+local MaxHealth = 100
+
 local Font = "HUDNumber5"
+
 local BGCol = Color(0,0,0,150)
 local MoneyCol = Color(100,200,100,250)
 local TimeCol = Color(200,200,100,250)
-local StartPt = Bezier.2DPoint(ScrW(),ScrH()-(ScrH()/10))
-local EndPt = Bezier.2DPoint(ScrW(),ScrH()-(ScrH()/10))
-local ControlPt = Bezier.2DPoint(ScrW()-(ScrW()/5),ScrH()/2)
+local HPCol = Color(240,50,50,250)
+
+local offsetConstant = 10
+
+local TimerItier = ScrH()-(ScrH()/5)
+local StartPt = Bezier.Point(ScrW(),ScrH()-(ScrH()/10))
+local EndPt = Bezier.Point(ScrW(),ScrH()/10)
+local ControlPt = Bezier.Point(ScrW()-(ScrW()/5),ScrH()/2)
+local MovingStartPt = Bezier.Point(ScrW(),(ScrH()-(ScrH()/10))-offsetConstant)
+local MovingEndPt = Bezier.Point(ScrW(),(ScrH()/10)+offsetConstant)
+local MovingControlPt = Bezier.Point((ScrW()-(ScrW()/5)+offsetConstant),ScrH()/2)
+
+local offsetConstant = 5
+local ThiefItier = ScrH()/5
+local ThiefHealthStart = Bezier.Point(ScrW()/5,ScrH())
+local ThiefHealthEnd = Bezier.Point(0,ScrH()-(ScrH()/5))
+local ThiefHealthControl = Bezier.Point(0,ScrH())
+local ThiefHealthMovingEnd = Bezier.Point(offsetConstant,ScrH()-(ScrH()/5))
+local ThiefHealthMovingStart = Bezier.Point((ScrW()/5)+offsetConstant,ScrH())
+local ThiefHealthMovingControl = Bezier.Point(offsetConstant,ScrH())
+
+local CuratorBoxSize = math.min(ScrW(),ScrH())/2.5
 
 function GM:HUDPaint()
 
 	GAMEMODE:HUDDrawTargetID()
 	GAMEMODE:DrawDeathNotice( 0.9, 0.1 )
+	
+	--Stuff Everyone draws
 	
 	local Time = string.ToMinutesSeconds(RoundTimer.GetCurrentTime())
 	local Muny = "$"..math.floor(LocalPlayer():GetNWInt("money"))
@@ -34,20 +68,60 @@ function GM:HUDPaint()
 	
 	draw.WordBox( 10, ScrW()-(offx+20),ScrH()-(offy+20), Muny, Font, BGCol, MoneyCol)
 	
-	local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,20,1,500,500,StartPt,ControlPt,EndPt)
+	
+	-- Timer Arch BG
+	local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,20,1,TimerItier,TimerItier,StartPt,ControlPt,EndPt)
 	for k,v in pairs(stufftodraw) do
 		draw.TexturedQuad(v)
 	end
 	
-	local str = "Round Time Remaining- "..Time
-	local offx,offy = surface.GetTextSize(str)
+	--Timer Text
+	local offx,offy = surface.GetTextSize(Time)
 	
-	draw.WordBox( 10, ScrW()-(offx+20), offy+20, str, Font, BGCol, TimeCol)
+	draw.WordBox( 10, ScrW()-(offx+20), 0, Time, Font, BGCol, TimeCol)
 
-	
-	local dist = (RoundTimer.GetCurrentTime()/RoundTimer.RoundTime)*500
-	local stufftodraw2 = Bezier.TableOfPointsOnQuadraticCurve(TimeCol,10,1,500,dist,StartPt,ControlPt,EndPt)
+	--Timer Arch FG
+	local dist = (RoundTimer.GetCurrentTime()/RoundTimer.RoundTime)*TimerItier
+	local stufftodraw2 = Bezier.TableOfPointsOnQuadraticCurve(TimeCol,10,1,TimerItier,dist,MovingStartPt,MovingControlPt,MovingEndPt)
 	for k,v in pairs(stufftodraw2) do
 		draw.TexturedQuad(v)
 	end
+	
+
+	if LocalPlayer():GetNWBool("Curator") then
+	--Curator Stuff
+	
+		--Quuck Menu (Top Left)
+		draw.RoundedBox(20,-CuratorBoxSize/2,-CuratorBoxSize/2,CuratorBoxSize,CuratorBoxSize,BGCol)
+	
+	else
+	--Thief Stuff
+	
+		--HPBar BG
+		local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,20,3,ThiefItier,ThiefItier,ThiefHealthStart,ThiefHealthControl,ThiefHealthEnd)
+		for k,v in pairs(stufftodraw) do
+			draw.TexturedQuad(v)
+		end
+	
+	
+		--HPBar FG
+		local dist = (LocalPlayer():Health()/MaxHealth)*ThiefItier
+		local stufftodraw2 = Bezier.TableOfPointsOnQuadraticCurve(HPCol,10,3,ThiefItier,dist,ThiefHealthMovingStart,ThiefHealthMovingControl,ThiefHealthMovingEnd)
+		for k,v in pairs(stufftodraw2) do
+			draw.TexturedQuad(v)
+		end
+	
+	
+	end
 end
+
+
+local AllowedElements = { 	"CHudChat",
+							"CHudCrosshair",
+							"CHudGMod",
+							"CHudVoiceStatus",
+							"CHudVoiceSelfStatus"
+						}
+function GM:HUDShouldDraw(element)
+	return table.HasValue(AllowedElements,element)
+end 

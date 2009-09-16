@@ -22,7 +22,7 @@ function Bezier.QudraticInterpolation(dis,pt1,pt2,pt3)
 	return ((1-dis)^2)*pt1+2*(1-dis)*dis*pt2+(dis^2)*pt3
 end
 
-function Bezier.2DPoint(xval,yval)
+function Bezier.Point(xval,yval)
 	return {x=xval,y=yval}
 end 
 

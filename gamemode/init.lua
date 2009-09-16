@@ -4,26 +4,38 @@ AddCSLuaFile( "shared.lua" )
 
 
 include( 'shared.lua' )
-include( 'chatcommands.lua' )
 
 
 
-for _, file in ipairs( file.Find( "../" .. GM.Folder .. "/gamemode/modules/server/*.lua" ) ) do
-	include( "modules/server/" .. file )
+for _, file in ipairs( file.Find( "../"..GM.Folder.."/gamemode/modules/server/*.lua" ) ) do
+	include( "modules/server/"..file )
 end
 
-for _, file in ipairs( file.Find( "../" .. GM.Folder .. "/gamemode/modules/shared/*.lua" ) ) do
+for _, file in ipairs( file.Find( "../"..GM.Folder.."/gamemode/modules/shared/*.lua" ) ) do
 	include( "modules/shared/" .. file )
-	AddCSLuaFile( "modules/shared/" .. file )
+	AddCSLuaFile( "modules/shared/"..file )
 end	
 
-for _, file in ipairs( file.Find( "../" .. GM.Folder .. "/gamemode/modules/client/*.lua" ) ) do
-	AddCSLuaFile( "modules/client/" .. file )
+for _, file in ipairs( file.Find( "../"..GM.Folder.."/gamemode/modules/client/*.lua" ) ) do
+	AddCSLuaFile( "modules/client/"..file )
 end
 
 
 function GM:Initialize()
+	
+end
 
+function GM:KeyPressed(ply, code)
+	if (not ply:GetNWBool("Curator")) and code == IN_USE then
+		local tr = util.QuickTrace(ply:GetShootPos(),ply:GetAimVector()*200,ply)
+		if tr.Hit and (not tr.HitSkybox) then
+			for k,v in ipairs(ents.FindByClass("trigger_event")) do
+				if v:IsPosInBounds(tr.HitPos) and ply:HasItems(v.ReqItems) then
+					v:Input("ValidActivate")
+				end
+			end
+		end
+	end
 end
 
 
@@ -60,23 +72,23 @@ function GM:SetupVote(name,duration,percent,OnPass,OnFail)
 	end)
 end
 
-function GM:PlayerLoadout( pl )
+function GM:PlayerLoadout( ply )
 
-	pl:RemoveAllAmmo()
+	ply:RemoveAllAmmo()
+	
+	if not ply:GetNWBool("Curator") then
+		ply:Give("weapon_crowbar")
+	end
 
-	local cl_defaultweapon = pl:GetInfo( "cl_defaultweapon" )
+	local cl_defaultweapon = ply:GetInfo( "cl_defaultweapon" )
 
-	if ( pl:HasWeapon( cl_defaultweapon )  ) then
-		pl:SelectWeapon( cl_defaultweapon ) 
+	if ( ply:HasWeapon( cl_defaultweapon )  ) then
+		ply:SelectWeapon( cl_defaultweapon ) 
 	end
 end
 
 function GM:PlayerShouldTakeDamage( ply, attacker )
-	if ( attacker:IsValid() and attacker:IsPlayer() ) then
-		return false
-	else 
-		return true 
-	end
+	return ply:GetNWBool("Curator")
 end
 
 function GM:ShowHelp( ply )
@@ -96,34 +108,59 @@ function GM:ShowSpare2(ply)
 
 end
 
+local SelectionWeights = {}
+
 function GM:PlayerInitialSpawn( ply )
 	self.BaseClass:PlayerInitialSpawn( ply )
+	SelectionWeights[ply] = 1
+	ply.ItemList = {}
 end
 
 function GM:PlayerDisconnected( ply )
-
+	SelectionWeights[ply] = nil
 end
 
 function GM:Think()
 
 end 
 
-function GM:RespawnEveryone()
-	for k,v in pairs(player.GetAll()) do
-		v:KillSilent()
-	end
-end
-
 function GM:ResetMap()
 	game.CleanUpMap()
 end
 
-function GM:RoundBegin()
+function table.WeightedRandom(tbl,weights)
+	local selectTbl = {}
+	for k,v in pairs(tbl) do
+		for i=1,weights[v] do
+			table.insert(selectTbl,v)
+		end
+	end
+	return table.Random(selectTbl)
+end
 
+function GM:RoundBegin()
+	self:ResetMap()
+	self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)
+	SelectionWeights[self.Curator] = 1
+	self.Curator:SetNWBool("Curator",true)
+	
+	self.Curator:SetPos(table.Random(ents.FindByClass("info_curator_start")):GetPos())
 end
 
 function GM:RoundEnd()
-
+	for k,v in ipairs(player.GetAll()) do
+		v:Lock()
+		v:ConCommand("OpenEndGameWindow")
+		SelectionWeights[v] = SelectionWeights[v] + 1
+		v:SetNWBool("Curator",false)
+		v:KillSilent()
+	end
+	timer.Simple(RoundTimer.GraceTime,function()
+		for k,v in ipairs(player.GetAll()) do
+			v:UnLock()
+			v:ConCommand("CloseEndGameWindow")
+		end
+	end)
 end
 
 hook.Add("RoundStarted","CuratorRoundStart",function() 

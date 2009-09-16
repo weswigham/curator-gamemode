@@ -55,6 +55,7 @@ CHATCMD.Usage = "(description of bug)"
 function CHATCMD:Run( ply, ... )
 	if arg[1] then
 		local text = table.concat(arg," ")
+		text = os.date().." - "..text
 		if not file.Exists("CuratorBugs\\"..ply:Nick()..".txt") then
 			file.Write("CuratorBugs\\"..ply:Nick()..".txt",text)
 		else

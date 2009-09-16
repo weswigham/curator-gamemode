@@ -25,7 +25,7 @@ end
 
 function RoundTimer.SlowThink()
 	if RoundTimer.CurrentTime > 0 then
-		RoundTimer.CurrentTime = CurrentTime - 1
+		RoundTimer.CurrentTime = RoundTimer.CurrentTime - 1
 		RoundTimer.InformClient()
 	else
 		if RoundTimer.RoundInProgress then

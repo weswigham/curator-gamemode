@@ -23,6 +23,22 @@ function GM:Initialize()
 
 end
 
+local function SecurityIcon()
+
+end
+
+local function FamilyIcon()
+
+end
+
+local function FancyIcon()
+
+end
+
+local function EnthusistIcon()
+
+end
+
 local MaxHealth = 100
 
 local Font = "HUDNumber5"
@@ -52,6 +68,52 @@ local ThiefHealthMovingStart = Bezier.Point((ScrW()/5)+offsetConstant,ScrH())
 local ThiefHealthMovingControl = Bezier.Point(offsetConstant,ScrH())
 
 local CuratorBoxSize = math.min(ScrW(),ScrH())/2.5
+local CuratorBoxIconPos = CuratorBoxSize/8
+local CuratorBoxSizeQuarter = CuratorBoxSize/4
+
+local CuratorSecurityIcon = vgui.Create("DImageButton")
+CuratorSecurityIcon:SetImage("CuratorHUD/lock")
+CuratorSecurityIcon:SetSize(CuratorBoxIconPos,CuratorBoxIconPos)
+CuratorSecurityIcon:SetPos(0,0)
+CuratorSecurityIcon.DoClick = function() if LocalPlayer():GetNWBool("Curator") then SecurityIcon() end end
+
+local CuratorFamilyIcon = vgui.Create("DImageButton")
+CuratorFamilyIcon:SetImage("CuratorHUD/family")
+CuratorFamilyIcon:SetSize(CuratorBoxIconPos,CuratorBoxIconPos)
+CuratorFamilyIcon:SetPos(CuratorBoxSizeQuarter,0)
+CuratorFamilyIcon.DoClick = function() if LocalPlayer():GetNWBool("Curator") then FamilyIcon() end end
+
+local CuratorFancyIcon = vgui.Create("DImageButton")
+CuratorFancyIcon:SetImage("CuratorHUD/fancy")
+CuratorFancyIcon:SetSize(CuratorBoxIconPos,CuratorBoxIconPos)
+CuratorFancyIcon:SetPos(0,CuratorBoxSizeQuarter)
+CuratorFancyIcon.DoClick = function() if LocalPlayer():GetNWBool("Curator") then FancyIcon() end end
+
+local CuratorEnthusistIcon = vgui.Create("DImageButton")
+CuratorEnthusistIcon:SetImage("CuratorHUD/person")
+CuratorEnthusistIcon:SetSize(CuratorBoxIconPos,CuratorBoxIconPos)
+CuratorEnthusistIcon:SetPos(CuratorBoxSizeQuarter,CuratorBoxSizeQuarter)
+CuratorEnthusistIcon.DoClick = function() if LocalPlayer():GetNWBool("Curator") then EnthusistIcon() end end
+
+local function DisableIcons()
+	CuratorSecurityIcon:SetVisible(false)
+
+	CuratorFamilyIcon:SetVisible(false)
+
+	CuratorFancyIcon:SetVisible(false)
+
+	CuratorEnthusistIcon:SetVisible(false)
+end
+
+local function EnableIcons()
+	CuratorSecurityIcon:SetVisible(true)
+
+	CuratorFamilyIcon:SetVisible(true)
+	
+	CuratorFancyIcon:SetVisible(true)
+
+	CuratorEnthusistIcon:SetVisible(true)
+end
 
 function GM:HUDPaint()
 
@@ -93,9 +155,15 @@ function GM:HUDPaint()
 	
 		--Quuck Menu (Top Left)
 		draw.RoundedBox(20,-CuratorBoxSize/2,-CuratorBoxSize/2,CuratorBoxSize,CuratorBoxSize,BGCol)
+		
+		--Icon Positions
+		EnableIcons()
+		
 	
 	else
 	--Thief Stuff
+	
+		DisableIcons()
 	
 		--HPBar BG
 		local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,20,3,ThiefItier,ThiefItier,ThiefHealthStart,ThiefHealthControl,ThiefHealthEnd)
@@ -114,6 +182,15 @@ function GM:HUDPaint()
 	
 	end
 end
+
+local function KeyPressed(ply, code)
+	if ply:GetNWBool("Curator") and code == IN_SPEED then
+		if not ply.Enabled then ply.Enabled = false end
+		ply.Enabled = !ply.Enabled
+		gui.EnableScreenClicker(ply.Enabled)
+	end
+end
+hook.Add("KeyPressed","CuratorKeyPressed",KeyPressed)
 
 
 local AllowedElements = { 	"CHudChat",

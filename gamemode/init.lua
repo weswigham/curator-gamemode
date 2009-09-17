@@ -25,7 +25,7 @@ function GM:Initialize()
 	
 end
 
-function GM:KeyPressed(ply, code)
+local function KeyPressed(ply, code)
 	if (not ply:GetNWBool("Curator")) and code == IN_USE then
 		local tr = util.QuickTrace(ply:GetShootPos(),ply:GetAimVector()*200,ply)
 		if tr.Hit and (not tr.HitSkybox) then
@@ -37,7 +37,7 @@ function GM:KeyPressed(ply, code)
 		end
 	end
 end
-
+hook.Add("KeyPressed","CuratorKeyPressed",KeyPressed)
 
 function GM:PhysgunPickup(ply, ent)
 	return false

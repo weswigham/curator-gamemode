@@ -37,7 +37,7 @@ local function KeyPressed(ply, code)
 		end
 	end
 end
-hook.Add("KeyPressed","CuratorKeyPressed",KeyPressed)
+hook.Add("KeyPress","CuratorKeyPressed",KeyPressed)
 
 function GM:PhysgunPickup(ply, ent)
 	return false
@@ -51,7 +51,8 @@ end
 function GM:PlayerSpawn( pl )
 
 	self.BaseClass.PlayerSpawn( self, pl )
-	
+	pl:SetMoveType(MOVETYPE_WALK)
+	pl:SetNoDraw(false)
 end
 
 
@@ -121,7 +122,10 @@ function GM:PlayerDisconnected( ply )
 end
 
 function GM:Think()
-
+	if self.Curator then
+		self.Curator:SetMoveType(MOVETYPE_NOCLIP)
+		self.Curator:SetNoDraw(true)
+	end
 end 
 
 function GM:ResetMap()
@@ -131,7 +135,7 @@ end
 function table.WeightedRandom(tbl,weights)
 	local selectTbl = {}
 	for k,v in pairs(tbl) do
-		for i=1,weights[v] do
+		for i=1,(weights[v] or 1) do
 			table.insert(selectTbl,v)
 		end
 	end
@@ -144,7 +148,10 @@ function GM:RoundBegin()
 	SelectionWeights[self.Curator] = 1
 	self.Curator:SetNWBool("Curator",true)
 	
-	self.Curator:SetPos(table.Random(ents.FindByClass("info_curator_start")):GetPos())
+	local tbl = ents.FindByClass("info_curator_start")
+	if tbl[1] then
+		self.Curator:SetPos(table.Random(tbl):GetPos())
+	end
 end
 
 function GM:RoundEnd()
@@ -167,14 +174,14 @@ hook.Add("RoundStarted","CuratorRoundStart",function()
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do
 		v:Input("RoundStart")
 	end
-	GM:RoundBegin()
+	GAMEMODE:RoundBegin()
 end)
 
 hook.Add("GraceTime","CuratorGraceTime", function()
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do
 		v:Input("RoundEnd")
 	end
-	GM:RoundEnd()
+	GAMEMODE:RoundEnd()
 end)
 
 --Redistributable datastream fix.

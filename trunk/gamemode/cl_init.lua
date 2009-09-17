@@ -190,7 +190,7 @@ local function KeyPressed(ply, code)
 		gui.EnableScreenClicker(ply.Enabled)
 	end
 end
-hook.Add("KeyPressed","CuratorKeyPressed",KeyPressed)
+hook.Add("KeyPress","CuratorKeyPressed",KeyPressed)
 
 
 local AllowedElements = { 	"CHudChat",

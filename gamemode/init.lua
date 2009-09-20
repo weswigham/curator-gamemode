@@ -122,9 +122,15 @@ function GM:PlayerDisconnected( ply )
 end
 
 function GM:Think()
-	if self.Curator then
+	if self.Curator and self.Curator:IsValid() then
 		self.Curator:SetMoveType(MOVETYPE_NOCLIP)
 		self.Curator:SetNoDraw(true)
+	elseif #player.GetAll() >= 1 then
+		--Wait, what? we have a player and no curator? well that's outright wrong.
+		self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)
+		self.Curator:SetNWBool("Curator",true)
+	else
+		self.Curator = nil
 	end
 end 
 
@@ -144,6 +150,9 @@ end
 
 function GM:RoundBegin()
 	self:ResetMap()
+	for k,v in ipairs(player.GetAll()) do
+		v:SetNWBool("Curator",false)
+	end
 	self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)
 	SelectionWeights[self.Curator] = 1
 	self.Curator:SetNWBool("Curator",true)

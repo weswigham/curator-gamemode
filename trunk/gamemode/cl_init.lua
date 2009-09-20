@@ -95,6 +95,8 @@ CuratorEnthusistIcon:SetSize(CuratorBoxIconPos,CuratorBoxIconPos)
 CuratorEnthusistIcon:SetPos(CuratorBoxSizeQuarter,CuratorBoxSizeQuarter)
 CuratorEnthusistIcon.DoClick = function() if LocalPlayer():GetNWBool("Curator") then EnthusistIcon() end end
 
+local HappinessBar1Color = Color(50,200,100,50)
+
 local function DisableIcons()
 	CuratorSecurityIcon:SetVisible(false)
 
@@ -159,6 +161,19 @@ function GM:HUDPaint()
 		--Icon Positions
 		EnableIcons()
 		
+		--Happiness Bar 1 BG
+		local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,20,3,ThiefItier,ThiefItier,ThiefHealthStart,ThiefHealthControl,ThiefHealthEnd)
+		for k,v in pairs(stufftodraw) do
+			draw.TexturedQuad(v)
+		end
+	
+	
+		--Happiness Bar 1 FG
+		local dist = (LocalPlayer():Health()/MaxHealth)*ThiefItier
+		local stufftodraw2 = Bezier.TableOfPointsOnQuadraticCurve(HappinessBar1Color,10,3,ThiefItier,dist,ThiefHealthMovingStart,ThiefHealthMovingControl,ThiefHealthMovingEnd)
+		for k,v in pairs(stufftodraw2) do
+			draw.TexturedQuad(v)
+		end
 	
 	else
 	--Thief Stuff
@@ -202,3 +217,27 @@ local AllowedElements = { 	"CHudChat",
 function GM:HUDShouldDraw(element)
 	return table.HasValue(AllowedElements,element)
 end 
+
+local function OpenInventory()
+	if not LocalPlayer():GetNWBool("Curator") then
+		if ValidEntity(LocalPlayer().Inventory) then
+			LocalPlayer().Inventory:Open()
+		else
+			LocalPlayer().Inventory = vgui.Create("InvPanel")
+			LocalPlayer().Inventory:SetPos(0, ScrH()/2-133)
+			LocalPlayer().Inventory:SetSize(68, 266)
+			LocalPlayer().Inventory:Open()
+		end
+	end
+
+	return false
+end
+hook.Add("OnSpawnMenuOpen", "OpenInventory", OpenInventory)
+
+function CloseInventory()
+	if ValidEntity(LocalPlayer().Inventory) then
+		LocalPlayer().Inventory:Close()
+	end
+end
+hook.Add("OnSpawnMenuClose", "CloseInventory", CloseInventory)
+

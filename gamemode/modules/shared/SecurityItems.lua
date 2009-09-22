@@ -26,4 +26,16 @@ function Security.GetItem(name)
 	return SecurityItemsByName[name]
 end 
 
-Security.AddItem(GetNewItemObject("Survailance Camera","Affords Basic Protection against intruders.",1000,7,-1,0,0,nil,nil,"Camera/Model/Goes/Here.mdl"))
+function Security.MakeStandardSpawnFunc(class)
+	local func = function(item,pos,normal) 
+		local ent = ents.Create(class)
+		ent:SetPos(pos)
+		ent:SetAngles(normal:Angle())
+		ent.Item = item
+		ent:SetModel(item:GetModel())
+		ent:Spawn()
+	end
+	return func
+end
+
+Security.AddItem(GetNewItemObject("Survailance Camera","Affords Basic Protection against intruders.",1000,7,-1,0,0,Security.MakeStandardSpawnFunc("curator_camera"),nil,"models/props_combine/combinecamera001.mdl"))

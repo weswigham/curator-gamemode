@@ -51,8 +51,17 @@ end
 function GM:PlayerSpawn( pl )
 
 	self.BaseClass.PlayerSpawn( self, pl )
-	pl:SetMoveType(MOVETYPE_WALK)
+	if pl ~= self.Curator then
+		pl:SetMoveType(MOVETYPE_WALK)
+	else
+		pl:SetMoveType(MOVETYPE_NOCLIP)
+		local tbl = ents.FindByClass("info_curator_start")
+		if tbl[1] then
+			self.Curator:SetPos(table.Random(tbl):GetPos())
+		end
+	end
 	pl:SetNoDraw(false)
+	
 end
 
 
@@ -77,7 +86,7 @@ function GM:PlayerLoadout( ply )
 
 	ply:RemoveAllAmmo()
 	
-	if not ply:GetNWBool("Curator") then
+	if (not ply:GetNWBool("Curator")) and ply ~= self.Curator then
 		ply:Give("weapon_crowbar")
 	end
 
@@ -89,7 +98,7 @@ function GM:PlayerLoadout( ply )
 end
 
 function GM:PlayerShouldTakeDamage( ply, attacker )
-	return ply:GetNWBool("Curator")
+	return not ply:GetNWBool("Curator")
 end
 
 function GM:ShowHelp( ply )
@@ -115,6 +124,10 @@ function GM:PlayerInitialSpawn( ply )
 	self.BaseClass:PlayerInitialSpawn( ply )
 	SelectionWeights[ply] = 1
 	ply.ItemList = {}
+
+    umsg.Start("SetupCuratorSpawnMenu", ply)
+    umsg.End()
+
 end
 
 function GM:PlayerDisconnected( ply )
@@ -129,8 +142,18 @@ function GM:Think()
 		--Wait, what? we have a player and no curator? well that's outright wrong.
 		self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)
 		self.Curator:SetNWBool("Curator",true)
+		self.Curator:KillSilent()
+		self.Curator:StripWeapons()
+		local tbl = ents.FindByClass("info_curator_start")
+		if tbl[1] then
+			self.Curator:SetPos(table.Random(tbl):GetPos())
+		end
+		self.Curator:SetNWInt("money",10000)
 	else
 		self.Curator = nil
+	end
+	for k,v in ipairs(player.GetAll()) do
+		v:SetNWBool("Curator",v == self.Curator)
 	end
 end 
 
@@ -152,10 +175,12 @@ function GM:RoundBegin()
 	self:ResetMap()
 	for k,v in ipairs(player.GetAll()) do
 		v:SetNWBool("Curator",false)
+		self.Curator:SetNWInt("money",0)
 	end
 	self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)
 	SelectionWeights[self.Curator] = 1
 	self.Curator:SetNWBool("Curator",true)
+	self.Curator:SetNWInt("money",10000)
 	
 	local tbl = ents.FindByClass("info_curator_start")
 	if tbl[1] then

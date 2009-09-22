@@ -7,17 +7,17 @@ local Item = {}
 
 Item.__index = Item
 
-AcessorFunc(Item,"m_sName","Name", FORCE_STRING ) --gotta love this acessor func shit. Makes this a piece of cake.
-AcessorFunc(Item,"m_sInfo","Information", FORCE_STRING )
-AcessorFunc(Item,"m_nCost","Price", FORCE_NUMBER )
-AcessorFunc(Item,"m_nLimit","Limit", FORCE_NUMBER )
-AcessorFunc(Item,"m_nHappiness1","FamilyHappiness", FORCE_NUMBER )
-AcessorFunc(Item,"m_nHappiness2","EnthusistHappiness", FORCE_NUMBER )
-AcessorFunc(Item,"m_nHappiness3","CollectorHappiness", FORCE_NUMBER )
-AcessorFunc(Item,"OnSpawn","OnSpawnFunc")
-AcessorFunc(Item,"OnRemove","OnRemoveFunc")
-AcessorFunc(Item,"m_sModel","Model", FORCE_STRING )
-AcessorFunc(Item,"m_sTexture","Texture", FORCE_STRING )
+AccessorFunc(Item,"m_sName","Name", FORCE_STRING ) --gotta love this acessor func shit. Makes this a piece of cake.
+AccessorFunc(Item,"m_sInfo","Information", FORCE_STRING )
+AccessorFunc(Item,"m_nCost","Price", FORCE_NUMBER )
+AccessorFunc(Item,"m_nLimit","Limit", FORCE_NUMBER )
+AccessorFunc(Item,"m_nHappiness1","FamilyHappiness", FORCE_NUMBER )
+AccessorFunc(Item,"m_nHappiness2","EnthusistHappiness", FORCE_NUMBER )
+AccessorFunc(Item,"m_nHappiness3","CollectorHappiness", FORCE_NUMBER )
+AccessorFunc(Item,"OnSpawn","OnSpawnFunc")
+AccessorFunc(Item,"OnRemove","OnRemoveFunc")
+AccessorFunc(Item,"m_sModel","Model", FORCE_STRING )
+AccessorFunc(Item,"m_sTexture","Texture", FORCE_STRING )
 
 function Item:CopyTo(item)
 	item:SetName(self:GetName() or "")

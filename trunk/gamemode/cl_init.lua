@@ -23,21 +23,6 @@ function GM:Initialize()
 
 end
 
-local function SecurityIcon()
-
-end
-
-local function FamilyIcon()
-
-end
-
-local function FancyIcon()
-
-end
-
-local function EnthusistIcon()
-
-end
 
 local MaxHealth = 100
 
@@ -67,55 +52,6 @@ local ThiefHealthMovingEnd = Bezier.Point(offsetConstant,ScrH()-(ScrH()/5))
 local ThiefHealthMovingStart = Bezier.Point((ScrW()/5)+offsetConstant,ScrH())
 local ThiefHealthMovingControl = Bezier.Point(offsetConstant,ScrH())
 
-local CuratorBoxSize = math.min(ScrW(),ScrH())/2.5
-local CuratorBoxIconPos = CuratorBoxSize/8
-local CuratorBoxSizeQuarter = CuratorBoxSize/4
-
-local CuratorSecurityIcon = vgui.Create("DImageButton")
-CuratorSecurityIcon:SetImage("CuratorHUD/lock")
-CuratorSecurityIcon:SetSize(CuratorBoxIconPos,CuratorBoxIconPos)
-CuratorSecurityIcon:SetPos(0,0)
-CuratorSecurityIcon.DoClick = function() if LocalPlayer():GetNWBool("Curator") then SecurityIcon() end end
-
-local CuratorFamilyIcon = vgui.Create("DImageButton")
-CuratorFamilyIcon:SetImage("CuratorHUD/family")
-CuratorFamilyIcon:SetSize(CuratorBoxIconPos,CuratorBoxIconPos)
-CuratorFamilyIcon:SetPos(CuratorBoxSizeQuarter,0)
-CuratorFamilyIcon.DoClick = function() if LocalPlayer():GetNWBool("Curator") then FamilyIcon() end end
-
-local CuratorFancyIcon = vgui.Create("DImageButton")
-CuratorFancyIcon:SetImage("CuratorHUD/fancy")
-CuratorFancyIcon:SetSize(CuratorBoxIconPos,CuratorBoxIconPos)
-CuratorFancyIcon:SetPos(0,CuratorBoxSizeQuarter)
-CuratorFancyIcon.DoClick = function() if LocalPlayer():GetNWBool("Curator") then FancyIcon() end end
-
-local CuratorEnthusistIcon = vgui.Create("DImageButton")
-CuratorEnthusistIcon:SetImage("CuratorHUD/person")
-CuratorEnthusistIcon:SetSize(CuratorBoxIconPos,CuratorBoxIconPos)
-CuratorEnthusistIcon:SetPos(CuratorBoxSizeQuarter,CuratorBoxSizeQuarter)
-CuratorEnthusistIcon.DoClick = function() if LocalPlayer():GetNWBool("Curator") then EnthusistIcon() end end
-
-local HappinessBar1Color = Color(50,200,100,50)
-
-local function DisableIcons()
-	CuratorSecurityIcon:SetVisible(false)
-
-	CuratorFamilyIcon:SetVisible(false)
-
-	CuratorFancyIcon:SetVisible(false)
-
-	CuratorEnthusistIcon:SetVisible(false)
-end
-
-local function EnableIcons()
-	CuratorSecurityIcon:SetVisible(true)
-
-	CuratorFamilyIcon:SetVisible(true)
-	
-	CuratorFancyIcon:SetVisible(true)
-
-	CuratorEnthusistIcon:SetVisible(true)
-end
 
 function GM:HUDPaint()
 
@@ -125,12 +61,7 @@ function GM:HUDPaint()
 	--Stuff Everyone draws
 	
 	local Time = string.ToMinutesSeconds(RoundTimer.GetCurrentTime())
-	local Muny = "$"..math.floor(LocalPlayer():GetNWInt("money"))
-	
 	surface.SetFont(Font)
-	local offx,offy = surface.GetTextSize(Muny)
-	
-	draw.WordBox( 10, ScrW()-(offx+20),ScrH()-(offy+20), Muny, Font, BGCol, MoneyCol)
 	
 	
 	-- Timer Arch BG
@@ -155,12 +86,6 @@ function GM:HUDPaint()
 	if LocalPlayer():GetNWBool("Curator") then
 	--Curator Stuff
 	
-		--Quuck Menu (Top Left)
-		draw.RoundedBox(20,-CuratorBoxSize/2,-CuratorBoxSize/2,CuratorBoxSize,CuratorBoxSize,BGCol)
-		
-		--Icon Positions
-		EnableIcons()
-		
 		--Happiness Bar 1 BG
 		local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,20,3,ThiefItier,ThiefItier,ThiefHealthStart,ThiefHealthControl,ThiefHealthEnd)
 		for k,v in pairs(stufftodraw) do
@@ -178,8 +103,6 @@ function GM:HUDPaint()
 	else
 	--Thief Stuff
 	
-		DisableIcons()
-	
 		--HPBar BG
 		local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,20,3,ThiefItier,ThiefItier,ThiefHealthStart,ThiefHealthControl,ThiefHealthEnd)
 		for k,v in pairs(stufftodraw) do
@@ -194,6 +117,12 @@ function GM:HUDPaint()
 			draw.TexturedQuad(v)
 		end
 	
+		local Muny = "$"..math.floor(LocalPlayer():GetNWInt("money"))
+	
+		surface.SetFont(Font)
+		local offx,offy = surface.GetTextSize(Muny)
+	
+		draw.WordBox( 10, ScrW()-(offx+20),ScrH()-(offy+20), Muny, Font, BGCol, MoneyCol)
 	
 	end
 end
@@ -202,6 +131,11 @@ local function KeyPressed(ply, code)
 	if ply:GetNWBool("Curator") and code == IN_SPEED then
 		if not ply.Enabled then ply.Enabled = false end
 		ply.Enabled = !ply.Enabled
+		if ply.Enabled == false then
+			RememberCursorPosition()
+		else
+			RestoreCursorPosition()
+		end
 		gui.EnableScreenClicker(ply.Enabled)
 	end
 end
@@ -241,3 +175,36 @@ function CloseInventory()
 end
 hook.Add("OnSpawnMenuClose", "CloseInventory", CloseInventory)
 
+
+function SetupCMenu(msg)
+	CMenu = vgui.Create("CuratorSpawnM")
+	CMenu:SetSize(134, 152)
+	CMenu:SetPos(5, 5)
+end
+usermessage.Hook("SetupCuratorSpawnMenu", SetupCMenu)
+
+
+function GM:Think()
+	if LocalPlayer().GhostIsActive then
+		local trace = {}
+		trace.start = EyePos()
+		trace.endpos = EyePos() + (EyeAngles() * 3000)
+		trace.filter = LocalPlayer()
+		trace.mask = MASK_VISIBLE
+		local tr = util.TraceLine(trace)
+		if tr and tr.Hit and not tr.HitSkybox then
+			if (not LocalPlayer().Ghost) or not LocalPlayer().Ghost:IsValid() then
+				LocalPlayer().Ghost = ents.Create("gmod_ghost")
+				LocalPlayer().Ghost:Spawn()
+			end
+			LocalPlayer().Ghost:SetModel(LocalPlayer().GhostModel or "")
+			LocalPlayer().Ghost:SetPos(tr.HitPos)
+			LocalPlayer().Ghost:SetAngle(tr.HitNormal)
+			LocalPlayer().Ghost:SetNoDraw(false)
+		elseif LocalPlayer().Ghost and LocalPlayer.Ghost:IsValid() then
+			LocalPlayer().Ghost:SetNoDraw(true)
+		end
+	elseif LocalPlayer().Ghost and LocalPlayer.Ghost:IsValid() then
+		LocalPlayer().Ghost:SetNoDraw(true)
+	end
+end 

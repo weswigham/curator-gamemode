@@ -27,15 +27,24 @@ function Security.GetItem(name)
 end 
 
 function Security.MakeStandardSpawnFunc(class)
-	local func = function(item,pos,normal) 
+	local func = function(item,ply,pos,ang) 
 		local ent = ents.Create(class)
 		ent:SetPos(pos)
-		ent:SetAngles(normal:Angle())
-		ent.Item = item
+		ent:SetAngles(ang)
+		ent.Item = item:CopyTo(GetNewItemObject())
 		ent:SetModel(item:GetModel())
 		ent:Spawn()
+        AccessorFunc(ent,"t_pOwner","Player")
+        ent:SetPlayer(ply)
 	end
 	return func
 end
 
-Security.AddItem(GetNewItemObject("Survailance Camera","Affords Basic Protection against intruders.",1000,7,-1,0,0,Security.MakeStandardSpawnFunc("curator_camera"),nil,"models/props_combine/combinecamera001.mdl"))
+function Security.MakeStandardLimitCheckFunc(class)
+	local func = function(item) 
+		return #ents.FindByClass(class)
+	end
+	return func
+end
+
+Security.AddItem(GetNewItemObject("Survailance Camera","Affords Basic Protection against intruders.",1000,7,-1,0,0,Security.MakeStandardSpawnFunc("curator_camera"),nil,Security.MakeStandardLimitCheckFunc("curator_camera"),"models/props_combine/combinecamera001.mdl"))

@@ -17,6 +17,7 @@ function CuratorSpawnM:PerformLayout()
 					SecurityP:SetPos(0, 0)
 					SecurityP:SetInfo(Security.GetItems())
 					SecurityP:SetVisible(false)
+                    SecurityP.MenuType = "Security"
 
 					FamilyP = vgui.Create("CItemPanel")
 					FamilyP:SetParent(MainP)
@@ -24,6 +25,7 @@ function CuratorSpawnM:PerformLayout()
 					FamilyP:SetPos(0, 0)
 					FamilyP:SetInfo(Security.GetItems()) --remember to change to others later
 					FamilyP:SetVisible(false)
+                    FamilyP.MenuType = "Family"
 
 					FancyP = vgui.Create("CItemPanel")
 					FancyP:SetParent(MainP)
@@ -31,6 +33,7 @@ function CuratorSpawnM:PerformLayout()
 					FancyP:SetPos(0, 0)
 					FancyP:SetInfo(Security.GetItems())
 					FancyP:SetVisible(false)
+                    FancyP.MenuType = "Fancy"
 
 					EnthusistP = vgui.Create("CItemPanel")
 					EnthusistP:SetParent(MainP)
@@ -38,6 +41,7 @@ function CuratorSpawnM:PerformLayout()
 					EnthusistP:SetPos(0, 0)
 					EnthusistP:SetInfo(Security.GetItems())
 					EnthusistP:SetVisible(false)
+                    EnthusistP.MenuType = "Enthusist"
 
 		SecurityB = vgui.Create("CIcon")
 		SecurityB:SetParent(self)
@@ -164,22 +168,49 @@ function CItemPanel:SetInfo(tbl)
 	for k, v in pairs(tbl) do
 		local Icon = vgui.Create("SpawnIcon")
 		Icon:SetModel(v:GetModel())
-		Icon.Item = k
+		Icon.Item = v
 		Icon.DoClick = function(Icon)
 			LocalPlayer().GhostIsActive = true
 			LocalPlayer().GhostModel = Icon.Item:GetModel()
 			LocalPlayer().GhostItem = Icon.Item
-			print("Yeah")
+			LocalPlayer().GhostType = self.MenuType
 		end
-		Icon.DoRightClick = function(Icon)
-			CreateItemInformationWindow(Icon.Item)
+		Icon.OnMousePressed = function(Icon,enum)
+			if enum == 108 then
+				CreateItemInformationWindow(Icon.Item,self.MenuType)
+			elseif enum == 107 then
+				Icon:DoClick()
+			end
 		end
 		self.List:AddItem(Icon)
 	end
 end
 
-function CreateItemInformationWindow(item)
+function CreateItemInformationWindow(item,typez)
 
+	local BG = vgui.Create("DFrame")
+	BG:SetPos((ScrW()/2)-200,(ScrH()/2)-50)
+	BG:SetSize(400,100)
+	BG:SetTitle(item:GetName())
+	
+	local SIcon = vgui.Create("SpawnIcon", BG)
+	SIcon:SetModel(item:GetModel())
+	SIcon:SetPos(6,29)
+	SIcon.Item = item
+	SIcon.DoClick = function(Icon)
+		LocalPlayer().GhostIsActive = true
+		LocalPlayer().GhostModel = SIcon.Item:GetModel()
+		LocalPlayer().GhostItem = SIcon.Item
+		LocalPlayer().GhostType = typez
+		BG:Close()
+	end
+	
+	local Cost = vgui.Create("DLabel", BG)
+	Cost:SetFont("HudHintTextLarge")
+	Cost:SetPos(74,29)
+	Cost:SetText("Cost: $"..item:GetPrice().."  Limit: "..item:GetLimit().."\n"..item:GetInformation().."\nHappiness Values: "..item:GetFamilyHappiness().."/"..item:GetEnthusistHappiness().."/"..item:GetCollectorHappiness())
+	Cost:SizeToContents()
+	
 end
 
 function CItemPanel:Paint()

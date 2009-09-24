@@ -106,6 +106,29 @@ function GM:ShowHelp( ply )
 	umsg.End()
 end
 
+function GM:Payday()
+	self.Curator:SetNWInt("money",self.Curator:GetNWInt("money")+(self.Curator:GetNWInt("happ1")*25+self.Curator:GetNWInt("happ2")*50+self.Curator:GetNWInt("happ3")*90)) -- that makes a max of 2500+5000+9000, or 16500. If you're getting this much, your thieves suck, and you pwn.
+	for k,v in ipairs(ents.FindByClass("curator_*")) do
+		if v.Item then
+			if v.Item:GetFamilyHappiness() > 0 then
+				v.Item:SetFamilyHappiness(math.Clamp(v.Item:GetFamilyHappiness()/2,0.25,100))
+			elseif v.Item:GetFamilyHappiness() < 0 then
+				v.Item:SetFamilyHappiness(math.Clamp(v.Item:GetFamilyHappiness()/2,-100,-0.25))
+			end
+			if v.Item:GetEnthusistHappiness() > 0 then
+				v.Item:SetEnthusistHappiness(math.Clamp(v.Item:GetEnthusistHappiness()/2,0.25,100))
+			elseif v.Item:GetEnthusistHappiness() < 0 then
+				v.Item:SetEnthusistHappiness(math.Clamp(v.Item:GetEnthusistHappiness()/2,-100,-0.25))
+			end
+			if v.Item:GetCollectorHappiness() > 0 then
+				v.Item:SetCollectorHappiness(math.Clamp(v.Item:GetCollectorHappiness()/2,0.25,100))
+			elseif v.Item:GetCollectorHappiness() < 0 then
+				v.Item:SetCollectorHappiness(math.Clamp(v.Item:GetCollectorHappiness()/2,-100,-0.25))
+			end
+		end
+	end
+end
+
 function GM:ShowTeam(ply)
 
 end
@@ -155,6 +178,17 @@ function GM:Think()
 	for k,v in ipairs(player.GetAll()) do
 		v:SetNWBool("Curator",v == self.Curator)
 	end
+	local val1,val2,val3
+	for k,v in ipairs(ents.FindByClass("curator_*")) do
+		if v.Item then
+			val1 = val1 + v.Item:GetFamilyHappiness()
+			val2 = val2 + v.Item:GetEnthusistHappiness()
+			val3 = val3 + v.Item:GetCollectorHappiness()
+		end
+	end
+	self.Curator:SetNWInt("happ1", math.Clamp(val1,0,100)) 
+	self.Curator:SetNWInt("happ2", math.Clamp(val2,0,100)) 
+	self.Curator:SetNWInt("happ3", math.Clamp(val3,0,100))
 end 
 
 function GM:ResetMap()
@@ -204,6 +238,34 @@ function GM:RoundEnd()
 	end)
 end
 
+local function FixStrings(...)
+	local tbl = {...}
+	for k,v in pairs(tbl) do
+		tbl[k] = tonumber(v)
+	end
+	return unpack(tbl)
+end
+
+concommand.Add("curator_spawn_object",function(ply,cmd,args)
+    local AType = args[1]
+    local name = args[2]
+    local ang = Angle(FixStrings(unpack(string.Explode(" ",args[3]))))
+    local pos = Vector(FixStrings(unpack(string.Explode(" ",args[4]))))
+    local item = _G[AType].GetItems()[name]
+    
+    if ply == GAMEMODE.Curator and ply:GetNWInt("money") >= item:GetPrice() then
+		if item:LimitCheck() < item:GetLimit() then
+			ply:SetNWInt("money",ply:GetNWInt("money") - item:GetPrice())
+			item:OnSpawn(ply,pos,ang)
+		else
+			ply:ChatPrint("You've hit the limit for "..item:GetName()..". Its limit is "..item:GetLimit()..".")
+		end
+	else
+		ply:ChatPrint("You don't have enough money for that "..item:GetName()..". It costs $"..item:GetPrice()..".")
+    end
+
+end)
+
 hook.Add("RoundStarted","CuratorRoundStart",function() 
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do
 		v:Input("RoundStart")
@@ -228,4 +290,13 @@ else
 	ErrorNoHalt(os.date().." Failed to fix datastream fuckup: \"CRecipientFilter\"'s metatable invalid.")
 end
 
+local Vec = FindMetaTable("Vector")
+function Vec:IsInMuseum()
+	for k,v in ipairs(ents.FindByClass("trigger_museum")) do
+		if v:IsPosInBounds(self) then
+			return true
+		end
+	end
+	return false
+end
 

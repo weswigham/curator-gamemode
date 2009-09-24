@@ -26,6 +26,8 @@ function Fancy.GetItem(name)
 	return FancyItemsByName[name]
 end 
 
+local zeroAng = Angle(0,0,0)
+
 function Fancy.MakeStandardSpawnFunc(class)
 	local func = function(item,ply,pos,ang) 
 		local ent = ents.Create(class)
@@ -60,6 +62,8 @@ function Fancy.MakeStandardArtCheckFunc(name)
     return func
 end
 
+local StdRot = Angle(90,0,0)
+
 Fancy.AddItem(GetNewItemObject("Mona Lisa",
 "It's incredible. Collectors love this.", 
 1000, 
@@ -70,4 +74,52 @@ Fancy.AddItem(GetNewItemObject("Mona Lisa",
 Fancy.MakeStandardSpawnFunc("curator_art"),
 nil, 
 Fancy.MakeStandardArtCheckFunc("Mona Lisa"), 
-"MonaLisaModelHere.mdl"))
+"models/props_c17/Frame002a.mdl"))
+
+Fancy.AddItem(GetNewItemObject("Horse Statue",
+"A true artistic beauty.", 
+2000, 
+3, 
+0,
+2, 
+6, 
+Fancy.MakeStandardSpawnFunc("curator_art"),
+nil, 
+Fancy.MakeStandardArtCheckFunc("Horse Statue"), 
+"models/props_c17/statue_horse.mdl"):SetAngularOffset(StdRot))
+
+Fancy.AddItem(GetNewItemObject("The Unknown One",
+"A very mysterious statue.", 
+4500, 
+2, 
+1,
+6, 
+14, 
+Fancy.MakeStandardSpawnFunc("curator_art"),
+nil, 
+Fancy.MakeStandardArtCheckFunc("The Unknown One"), 
+"models/props_c17/gravestone_statue001a.mdl"):SetAngularOffset(StdRot))
+
+Fancy.AddItem(GetNewItemObject("The Holy Cross",
+"A very religious statue.", 
+3000, 
+3, 
+4,
+6, 
+10, 
+Fancy.MakeStandardSpawnFunc("curator_art"),
+nil, 
+Fancy.MakeStandardArtCheckFunc("The Holy Cross"), 
+"models/props_c17/gravestone_cross001a.mdl"):SetAngularOffset(StdRot))
+
+Fancy.AddItem(GetNewItemObject("<insert name of famous art here>",
+"It's fucking incredible.", 
+750, 
+-1, 
+-1,
+1, 
+4, 
+Fancy.MakeStandardSpawnFunc("curator_art"),
+nil, 
+Fancy.MakeStandardArtCheckFunc("<insert name of famous art here>"), 
+"models/props_c17/Frame002a.mdl"))

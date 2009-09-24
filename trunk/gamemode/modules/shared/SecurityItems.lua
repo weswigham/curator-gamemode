@@ -69,4 +69,40 @@ Security.AddItem(GetNewItemObject("Pressure Plates",
 Security.MakeStandardSpawnFunc("curator_pressureplates"),
 nil,
 Security.MakeStandardLimitCheckFunc("curator_pressureplates"),
-"PressurePlatesModelHere.mdl"))
+"models/props_junk/TrashDumpster02b.mdl"))
+
+Security.AddItem(GetNewItemObject("Laser Emitter",
+"Detects (and hurts) thieves.",
+500,
+10,
+0,
+0,
+0,
+Security.MakeStandardSpawnFunc("curator_laser"),
+nil,
+Security.MakeStandardLimitCheckFunc("curator_laser"),
+"models/props_combine/combine_mine01.mdl"))
+
+Security.AddItem(GetNewItemObject("Laser Grid",
+"Detects (and hurts) thieves. A step above the emitter.",
+2500,
+4,
+0,
+0,
+0,
+Security.MakeStandardSpawnFunc("curator_laser_grid"),
+nil,
+Security.MakeStandardLimitCheckFunc("curator_laser_grid"),
+"models/props_combine/combine_mine01.mdl"))
+
+Security.AddItem(GetNewItemObject("Turret",
+"Okay, this is overkill. Literally.",
+4500,
+2,
+-2,
+-2,
+-1,
+Security.MakeStandardSpawnFunc("curator_turret"),
+nil,
+Security.MakeStandardLimitCheckFunc("curator_turret"),
+"models/Combine_turrets/Floor_turret.mdl"))

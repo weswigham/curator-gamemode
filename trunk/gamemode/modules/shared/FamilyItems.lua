@@ -26,6 +26,8 @@ function Family.GetItem(name)
 	return FamilyItemsByName[name]
 end 
 
+local zeroAng = Angle(0,0,0)
+
 function Family.MakeStandardSpawnFunc(class)
 	local func = function(item,ply,pos,ang) 
 		local ent = ents.Create(class)
@@ -60,6 +62,8 @@ function Family.MakeStandardArtCheckFunc(name)
     return func
 end
 
+local StdRot = Angle(90,0,0)
+
 Family.AddItem(GetNewItemObject("Virtual Reality Machine", --name
 "It's art. No, really.", --desc
 1000, --cost
@@ -70,7 +74,7 @@ Family.AddItem(GetNewItemObject("Virtual Reality Machine", --name
 Family.MakeStandardSpawnFunc("curator_art"), --spawn function
 nil, --OnRemove function (in case it's made of multiple entities or something)
 Family.MakeStandardArtCheckFunc("Virtual Reality Machine"), --limit check func
-"VRMachineModelHere.mdl")) --model (optionally, texture, too)
+"models/props_vehicles/apc001.mdl"):SetAngularOffset(StdRot)) --model (optionally, texture, too)
 
 Family.AddItem(GetNewItemObject("Interactive Green Screen", --name
 "Okay, this might not really be art...", --desc
@@ -82,7 +86,7 @@ Family.AddItem(GetNewItemObject("Interactive Green Screen", --name
 Family.MakeStandardSpawnFunc("curator_art"), --spawn function
 nil, --OnRemove function (in case it's made of multiple entities or something)
 Family.MakeStandardArtCheckFunc("Interactive Green Screen"), --limit check func
-"GreenScreenModelHere.mdl")) --model (optionally, texture, too)
+"models/props_wasteland/interior_fence002d.mdl", "models/props_combine/com_shield001a"):SetAngularOffset(StdRot)) --model (optionally, texture, too)
 
 Family.AddItem(GetNewItemObject("Food Court",
 "It pleases families.", 
@@ -94,7 +98,7 @@ Family.AddItem(GetNewItemObject("Food Court",
 Family.MakeStandardSpawnFunc("curator_art"),
 nil, 
 Family.MakeStandardArtCheckFunc("Food Court"), 
-"FoodCourtModelHere.mdl"))
+"models/props_c17/FurnitureTable002a.mdl"):SetAngularOffset(StdRot))
 
 Family.AddItem(GetNewItemObject("Media Arts Exhibit",
 "Exhibit on Video Game art and the media.", 
@@ -106,7 +110,7 @@ Family.AddItem(GetNewItemObject("Media Arts Exhibit",
 Family.MakeStandardSpawnFunc("curator_art"),
 nil, 
 Family.MakeStandardArtCheckFunc("Media Arts Exhibit"), 
-"MediaArtsExhibitModelHere.mdl"))
+"models/props_combine/combine_monitorbay.mdl"):SetAngularOffset(StdRot))
 
 Family.AddItem(GetNewItemObject("Children's Art Exhibit",
 "Exhibit on art made by children.", 
@@ -118,7 +122,7 @@ Family.AddItem(GetNewItemObject("Children's Art Exhibit",
 Family.MakeStandardSpawnFunc("curator_art"),
 nil, 
 Family.MakeStandardArtCheckFunc("Children's Art Exhibit"), 
-"ChildrensArtModelHere.mdl"))
+"models/props_c17/Frame002a.mdl"))
 
 Family.AddItem(GetNewItemObject("Science Theatre",
 "Video is a widely popular form of art.", 
@@ -130,7 +134,7 @@ Family.AddItem(GetNewItemObject("Science Theatre",
 Family.MakeStandardSpawnFunc("curator_art"),
 nil, 
 Family.MakeStandardArtCheckFunc("Science Theatre"), 
-"ScienceTheatreModelHere.mdl"))
+"models/props_combine/combine_bunker01.mdl"):SetAngularOffset(StdRot))
 
 Family.AddItem(GetNewItemObject("Indoor Playground",
 "Well, the children love it...", 
@@ -142,4 +146,4 @@ Family.AddItem(GetNewItemObject("Indoor Playground",
 Family.MakeStandardSpawnFunc("curator_art"),
 nil, 
 Family.MakeStandardArtCheckFunc("Indoor Playground"), 
-"ScienceTheatreModelHere.mdl"))
+"models/props_c17/playgroundslide01.mdl"):SetAngularOffset(StdRot))

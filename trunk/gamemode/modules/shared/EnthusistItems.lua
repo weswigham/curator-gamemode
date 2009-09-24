@@ -26,6 +26,8 @@ function Enthusist.GetItem(name)
 	return EnthusistItemsByName[name]
 end 
 
+local zeroAng = Angle(0,0,0)
+
 function Enthusist.MakeStandardSpawnFunc(class)
 	local func = function(item,ply,pos,ang) 
 		local ent = ents.Create(class)
@@ -60,14 +62,40 @@ function Enthusist.MakeStandardArtCheckFunc(name)
     return func
 end
 
+local StdRot = Angle(90,0,0)
+
 Enthusist.AddItem(GetNewItemObject("Modern Art",
 "Families can't appreciate this type of art.", 
 1000, 
-1, 
+3, 
 -2,
 10, 
 3, 
-Enthusist.MakeStandardSpawnFunc("curator_art"),
+Enthusist.MakeStandardSpawnFunc("curator_art",nil,10),
 nil, 
 Enthusist.MakeStandardArtCheckFunc("Modern Art"), 
-"ModernArtModelHere.mdl"))
+"models/props_c17/Frame002a.mdl"))
+
+Enthusist.AddItem(GetNewItemObject("Urban Decay",
+"Stylish.", 
+1500, 
+3, 
+0,
+10,
+3, 
+Enthusist.MakeStandardSpawnFunc("curator_art"),
+nil, 
+Enthusist.MakeStandardArtCheckFunc("Urban Decay"), 
+"models/props_c17/pillarcluster_001a.mdl"):SetAngularOffset(StdRot))
+
+Enthusist.AddItem(GetNewItemObject("Fountain Statue",
+"Does not spew water.", 
+500, 
+2, 
+0,
+6,
+1, 
+Enthusist.MakeStandardSpawnFunc("curator_art"),
+nil, 
+Enthusist.MakeStandardArtCheckFunc("Fountain Statue"), 
+"models/props_c17/fountain_01.mdl"):SetAngularOffset(StdRot))

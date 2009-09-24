@@ -20,6 +20,36 @@ AccessorFunc(Item,"m_sModel","Model", FORCE_STRING )
 AccessorFunc(Item,"m_sTexture","Texture", FORCE_STRING )
 AccessorFunc(Item,"LimitCheck","LimitCheckFunc")
 
+function Item:SetAngularOffset(ang)
+	self.a_AngOff = ang
+	return self
+end
+
+function Item:GetAngularOffset()
+	return self.a_AngOff or Angle(0,0,0)
+end
+
+Item.AngularOffset = Item.GetAngularOffset
+
+function Item:SetPosOffset(num)
+	if type(num) == "string" then 
+		if self:GetModel() then
+			local tmp = ents.Create("prop_physics")
+			tmp:SetModel(self:GetModel())
+			tmp:Spawn()
+			num = tmp:OBBMins().z*-1
+			tmp:Remove()
+		end
+	end
+	self.v_VecOff = num
+	return self
+end
+
+function Item:GetPosOffset()
+	if not self.v_VecOff then self:SetPosOffset("Auto") end
+	return self.v_VecOff
+end
+
 function Item:CopyTo(item)
 	item:SetName(self:GetName() or "")
 	item:SetInformation(self:GetInformation() or "")
@@ -33,6 +63,8 @@ function Item:CopyTo(item)
 	item:SetLimitCheckFunc(self:GetLimitCheckFunc() or (function() end))
 	item:SetModel(self:GetModel() or "")
 	item:SetTexture(self:GetTexture() or "")
+	
+	return item
 end
 
 function Item:SetLimit(num)

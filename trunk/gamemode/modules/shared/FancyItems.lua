@@ -47,4 +47,27 @@ function Fancy.MakeStandardLimitCheckFunc(class)
 	return func
 end
 
-Fancy.AddItem(GetNewItemObject("Survailance Camera","Affords Basic Protection against intruders.",1000,7,-1,0,0,Fancy.MakeStandardSpawnFunc("curator_camera"),nil,Fancy.MakeStandardLimitCheckFunc("curator_camera"),"models/props_combine/combinecamera001.mdl"))
+function Fancy.MakeStandardArtCheckFunc(name)
+    local func = function(item)
+        local i = 0
+        for k,v in ipairs(ents.FindByClass("curator_art")) do
+            if v.Item:GetName() == name then
+                i = i + 1
+            end
+        end
+        return i
+    end
+    return func
+end
+
+Fancy.AddItem(GetNewItemObject("Mona Lisa",
+"It's incredible. Collectors love this.", 
+1000, 
+1, 
+-4,
+2, 
+8, 
+Fancy.MakeStandardSpawnFunc("curator_art"),
+nil, 
+Fancy.MakeStandardArtCheckFunc("Mona Lisa"), 
+"MonaLisaModelHere.mdl"))

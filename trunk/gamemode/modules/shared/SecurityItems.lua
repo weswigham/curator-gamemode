@@ -47,4 +47,26 @@ function Security.MakeStandardLimitCheckFunc(class)
 	return func
 end
 
-Security.AddItem(GetNewItemObject("Survailance Camera","Affords Basic Protection against intruders.",1000,7,-1,0,0,Security.MakeStandardSpawnFunc("curator_camera"),nil,Security.MakeStandardLimitCheckFunc("curator_camera"),"models/props_combine/combinecamera001.mdl"))
+Security.AddItem(GetNewItemObject("Survailance Camera",
+"Affords Basic Protection against intruders.",
+1000,
+7,
+-1,
+0,
+0,
+Security.MakeStandardSpawnFunc("curator_camera"),
+nil,
+Security.MakeStandardLimitCheckFunc("curator_camera"),
+"models/props_combine/combinecamera001.mdl"))
+
+Security.AddItem(GetNewItemObject("Pressure Plates",
+"Sensitive to thives walking on it.",
+1500,
+3,
+0,
+0,
+0,
+Security.MakeStandardSpawnFunc("curator_pressureplates"),
+nil,
+Security.MakeStandardLimitCheckFunc("curator_pressureplates"),
+"PressurePlatesModelHere.mdl"))

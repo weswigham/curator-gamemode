@@ -47,4 +47,99 @@ function Family.MakeStandardLimitCheckFunc(class)
 	return func
 end
 
-Family.AddItem(GetNewItemObject("Survailance Camera","Affords Basic Protection against intruders.",1000,7,-1,0,0,Family.MakeStandardSpawnFunc("curator_camera"),nil,Family.MakeStandardLimitCheckFunc("curator_camera"),"models/props_combine/combinecamera001.mdl"))
+function Family.MakeStandardArtCheckFunc(name)
+    local func = function(item)
+        local i = 0
+        for k,v in ipairs(ents.FindByClass("curator_art")) do
+            if v.Item:GetName() == name then
+                i = i + 1
+            end
+        end
+        return i
+    end
+    return func
+end
+
+Family.AddItem(GetNewItemObject("Virtual Reality Machine", --name
+"It's art. No, really.", --desc
+1000, --cost
+3, --limit
+10, --Family Hap Val
+1, --Enthusist Hap Val
+0, --Collector/Fancy Hap Val
+Family.MakeStandardSpawnFunc("curator_art"), --spawn function
+nil, --OnRemove function (in case it's made of multiple entities or something)
+Family.MakeStandardArtCheckFunc("Virtual Reality Machine"), --limit check func
+"VRMachineModelHere.mdl")) --model (optionally, texture, too)
+
+Family.AddItem(GetNewItemObject("Interactive Green Screen", --name
+"Okay, this might not really be art...", --desc
+2000, --cost
+1, --limit
+14, --Family Hap Val
+0, --Enthusist Hap Val
+-3, --Collector/Fancy Hap Val
+Family.MakeStandardSpawnFunc("curator_art"), --spawn function
+nil, --OnRemove function (in case it's made of multiple entities or something)
+Family.MakeStandardArtCheckFunc("Interactive Green Screen"), --limit check func
+"GreenScreenModelHere.mdl")) --model (optionally, texture, too)
+
+Family.AddItem(GetNewItemObject("Food Court",
+"It pleases families.", 
+1750, 
+1, 
+12,
+0, 
+-1, 
+Family.MakeStandardSpawnFunc("curator_art"),
+nil, 
+Family.MakeStandardArtCheckFunc("Food Court"), 
+"FoodCourtModelHere.mdl"))
+
+Family.AddItem(GetNewItemObject("Media Arts Exhibit",
+"Exhibit on Video Game art and the media.", 
+750, 
+6, 
+4,
+2, 
+0, 
+Family.MakeStandardSpawnFunc("curator_art"),
+nil, 
+Family.MakeStandardArtCheckFunc("Media Arts Exhibit"), 
+"MediaArtsExhibitModelHere.mdl"))
+
+Family.AddItem(GetNewItemObject("Children's Art Exhibit",
+"Exhibit on art made by children.", 
+1250, 
+5, 
+7,
+2, 
+0, 
+Family.MakeStandardSpawnFunc("curator_art"),
+nil, 
+Family.MakeStandardArtCheckFunc("Children's Art Exhibit"), 
+"ChildrensArtModelHere.mdl"))
+
+Family.AddItem(GetNewItemObject("Science Theatre",
+"Video is a widely popular form of art.", 
+2500, 
+1, 
+20,
+8, 
+4, 
+Family.MakeStandardSpawnFunc("curator_art"),
+nil, 
+Family.MakeStandardArtCheckFunc("Science Theatre"), 
+"ScienceTheatreModelHere.mdl"))
+
+Family.AddItem(GetNewItemObject("Indoor Playground",
+"Well, the children love it...", 
+3000, 
+1, 
+25,
+2, 
+-2, 
+Family.MakeStandardSpawnFunc("curator_art"),
+nil, 
+Family.MakeStandardArtCheckFunc("Indoor Playground"), 
+"ScienceTheatreModelHere.mdl"))

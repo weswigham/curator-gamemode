@@ -23,7 +23,7 @@ function CuratorSpawnM:PerformLayout()
 					FamilyP:SetParent(MainP)
 					FamilyP:SetSize(MainP:GetWide(), MainP:GetTall())
 					FamilyP:SetPos(0, 0)
-					FamilyP:SetInfo(Security.GetItems()) --remember to change to others later
+					FamilyP:SetInfo(Family.GetItems()) --remember to change to others later
 					FamilyP:SetVisible(false)
                     FamilyP.MenuType = "Family"
 
@@ -31,7 +31,7 @@ function CuratorSpawnM:PerformLayout()
 					FancyP:SetParent(MainP)
 					FancyP:SetSize(MainP:GetWide(), MainP:GetTall())
 					FancyP:SetPos(0, 0)
-					FancyP:SetInfo(Security.GetItems())
+					FancyP:SetInfo(Fancy.GetItems())
 					FancyP:SetVisible(false)
                     FancyP.MenuType = "Fancy"
 
@@ -39,7 +39,7 @@ function CuratorSpawnM:PerformLayout()
 					EnthusistP:SetParent(MainP)
 					EnthusistP:SetSize(MainP:GetWide(), MainP:GetTall())
 					EnthusistP:SetPos(0, 0)
-					EnthusistP:SetInfo(Security.GetItems())
+					EnthusistP:SetInfo(Enthusist.GetItems())
 					EnthusistP:SetVisible(false)
                     EnthusistP.MenuType = "Enthusist"
 

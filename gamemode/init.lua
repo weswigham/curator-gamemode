@@ -106,24 +106,26 @@ function GM:ShowHelp( ply )
 	umsg.End()
 end
 
+local DecayFactor = 1.2
+
 function GM:Payday()
 	self.Curator:SetNWInt("money",self.Curator:GetNWInt("money")+(self.Curator:GetNWInt("happ1")*25+self.Curator:GetNWInt("happ2")*50+self.Curator:GetNWInt("happ3")*90)) -- that makes a max of 2500+5000+9000, or 16500. If you're getting this much, your thieves suck, and you pwn.
 	for k,v in ipairs(ents.FindByClass("curator_*")) do
 		if v.Item then
 			if v.Item:GetFamilyHappiness() > 0 then
-				v.Item:SetFamilyHappiness(math.Clamp(v.Item:GetFamilyHappiness()/2,0.25,100))
+				v.Item:SetFamilyHappiness(math.Clamp(v.Item:GetFamilyHappiness()/DecayFactor,0.25,100))
 			elseif v.Item:GetFamilyHappiness() < 0 then
-				v.Item:SetFamilyHappiness(math.Clamp(v.Item:GetFamilyHappiness()/2,-100,-0.25))
+				v.Item:SetFamilyHappiness(math.Clamp(v.Item:GetFamilyHappiness()/DecayFactor,-100,-0.25))
 			end
 			if v.Item:GetEnthusistHappiness() > 0 then
-				v.Item:SetEnthusistHappiness(math.Clamp(v.Item:GetEnthusistHappiness()/2,0.25,100))
+				v.Item:SetEnthusistHappiness(math.Clamp(v.Item:GetEnthusistHappiness()/DecayFactor,0.25,100))
 			elseif v.Item:GetEnthusistHappiness() < 0 then
-				v.Item:SetEnthusistHappiness(math.Clamp(v.Item:GetEnthusistHappiness()/2,-100,-0.25))
+				v.Item:SetEnthusistHappiness(math.Clamp(v.Item:GetEnthusistHappiness()/DecayFactor,-100,-0.25))
 			end
 			if v.Item:GetCollectorHappiness() > 0 then
-				v.Item:SetCollectorHappiness(math.Clamp(v.Item:GetCollectorHappiness()/2,0.25,100))
+				v.Item:SetCollectorHappiness(math.Clamp(v.Item:GetCollectorHappiness()/DecayFactor,0.25,100))
 			elseif v.Item:GetCollectorHappiness() < 0 then
-				v.Item:SetCollectorHappiness(math.Clamp(v.Item:GetCollectorHappiness()/2,-100,-0.25))
+				v.Item:SetCollectorHappiness(math.Clamp(v.Item:GetCollectorHappiness()/DecayFactor,-100,-0.25))
 			end
 		end
 	end
@@ -178,7 +180,7 @@ function GM:Think()
 	for k,v in ipairs(player.GetAll()) do
 		v:SetNWBool("Curator",v == self.Curator)
 	end
-	local val1,val2,val3
+	local val1,val2,val3 = 0,0,0
 	for k,v in ipairs(ents.FindByClass("curator_*")) do
 		if v.Item then
 			val1 = val1 + v.Item:GetFamilyHappiness()

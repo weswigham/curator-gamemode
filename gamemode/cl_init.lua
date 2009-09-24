@@ -58,17 +58,11 @@ local HapB2Col = Color(20,20,200,250)
 local HapB3Col = Color(40,170,40,250)
 
 local move = 20
-local HapB2Start = Bezier.Point((ScrW()/5)+move,ScrH())
-local HapB2End = Bezier.Point(move,ScrH()-(ScrH()/5))
-local HapB2Control = Bezier.Point(move,ScrH())
 local HapB2MovingEnd = Bezier.Point(offsetConstant+move,ScrH()-(ScrH()/5))
 local HapB2MovingStart = Bezier.Point((ScrW()/5)+offsetConstant+move,ScrH())
 local HapB2MovingControl = Bezier.Point(offsetConstant+move,ScrH())
 
 local move = 40
-local HapB3Start = Bezier.Point((ScrW()/5)+move,ScrH())
-local HapB3End = Bezier.Point(move,ScrH()-(ScrH()/5))
-local HapB3Control = Bezier.Point(move,ScrH())
 local HapB3MovingEnd = Bezier.Point(offsetConstant+move,ScrH()-(ScrH()/5))
 local HapB3MovingStart = Bezier.Point((ScrW()/5)+offsetConstant+move,ScrH())
 local HapB3MovingControl = Bezier.Point(offsetConstant+move,ScrH())
@@ -108,7 +102,7 @@ function GM:HUDPaint()
 	--Curator Stuff
 	
 		--Happiness Bar 1 BG
-		local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,20,3,ThiefItier,ThiefItier,ThiefHealthStart,ThiefHealthControl,ThiefHealthEnd)
+		local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,60,3,ThiefItier,ThiefItier,ThiefHealthStart,ThiefHealthControl,ThiefHealthEnd)
 		for k,v in pairs(stufftodraw) do
 			draw.TexturedQuad(v)
 		end
@@ -120,15 +114,10 @@ function GM:HUDPaint()
 		for k,v in pairs(stufftodraw2) do
 			draw.TexturedQuad(v)
 			if k == #stufftodraw2 then
-				draw.SimpleText(ply:GetNWInt("Happ1"),Font2,v.x+5,v.y-20,HappinessBar1Color,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText(math.ceil(ply:GetNWInt("Happ1")),Font2,v.x+5,v.y-40,HappinessBar1Color,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			end
 		end
-		
-		--Happiness Bar 2 BG
-		local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,20,3,ThiefItier,ThiefItier,HapB2Start,HapB2Control,HapB2End)
-		for k,v in pairs(stufftodraw) do
-			draw.TexturedQuad(v)
-		end
+
 
 		--Happiness Bar 2 FG
 		local dist = (ply:GetNWInt("Happ2")/100)*ThiefItier
@@ -136,15 +125,10 @@ function GM:HUDPaint()
 		for k,v in pairs(stufftodraw2) do
 			draw.TexturedQuad(v)
 			if k == #stufftodraw2 then
-				draw.SimpleText(ply:GetNWInt("Happ2"),Font2,v.x+5,v.y-20,HapB2Col,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText(math.ceil(ply:GetNWInt("Happ2")),Font2,v.x+5,v.y-30,HapB2Col,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			end
 		end
-		
-		--Happiness Bar 3 BG
-		local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,20,3,ThiefItier,ThiefItier,HapB3Start,HapB3Control,HapB3End)
-		for k,v in pairs(stufftodraw) do
-			draw.TexturedQuad(v)
-		end
+
 
 		--Happiness Bar 3 FG
 		local dist = (ply:GetNWInt("Happ3")/100)*ThiefItier
@@ -152,7 +136,7 @@ function GM:HUDPaint()
 		for k,v in pairs(stufftodraw2) do
 			draw.TexturedQuad(v)
 			if k == #stufftodraw2 then
-				draw.SimpleText(ply:GetNWInt("Happ3"),Font2,v.x+5,v.y-20,HapB3Col,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText(math.ceil(ply:GetNWInt("Happ3")),Font2,v.x+5,v.y-20,HapB3Col,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			end
 		end
 	else
@@ -241,20 +225,14 @@ usermessage.Hook("SetupCuratorSpawnMenu", SetupCMenu)
 
 function GM:Think()
 	if LocalPlayer().GhostIsActive then
-		--[[local trace = {}
-		trace.start = EyePos()
-		trace.endpos = EyePos() + (EyeAngles():Forward() * 3000)
-		trace.filter = LocalPlayer()
-		trace.mask = MASK_VISIBLE
-		local tr = util.TraceLine(trace)]]
 		local tr = LocalPlayer():GetEyeTrace()
 		if tr and tr.Hit and (not tr.HitSkybox) and not tr.HitNoDraw then
 			if (not LocalPlayer().Ghost) or not LocalPlayer().Ghost:IsValid() then
 				LocalPlayer().Ghost = ClientsideModel(LocalPlayer().GhostModel, RENDERGROUP_OPAQUE)
 			end
 			LocalPlayer().Ghost:SetModel(LocalPlayer().GhostModel or "")
-			LocalPlayer().Ghost:SetPos(tr.HitPos)
-			LocalPlayer().Ghost:SetAngles(tr.HitNormal:Angle())
+			LocalPlayer().Ghost:SetPos(tr.HitPos+(tr.HitNormal*LocalPlayer().GhostItem:GetPosOffset()))
+			LocalPlayer().Ghost:SetAngles(tr.HitNormal:Angle()+LocalPlayer().GhostItem:AngularOffset())
 			LocalPlayer().Ghost:SetNoDraw(false)
 		elseif LocalPlayer().Ghost and LocalPlayer.Ghost:IsValid() then
 			LocalPlayer().Ghost:SetNoDraw(true)
@@ -265,11 +243,18 @@ function GM:Think()
 end 
 
 function GM:GUIMousePressed(mc)
-    if LocalPlayer().GhostIsActive then
+    if LocalPlayer().GhostIsActive and mc == 107 then
         LocalPlayer().GhostIsActive = false
         local item = LocalPlayer().GhostItem
         RunConsoleCommand("curator_spawn_object",LocalPlayer().GhostType,item:GetName(),tostring(LocalPlayer().Ghost:GetAngles()),tostring(LocalPlayer().Ghost:GetPos()))
         LocalPlayer().Ghost:Remove()
+        LocalPlayer().Ghost = nil
+        LocalPlayer().GhostItem = nil
+        LocalPlayer().GhostModel = nil
+        LocalPlayer().GhostType = nil
+	elseif LocalPlayer().GhostIsActive and mc == 108 then
+		LocalPlayer().GhostIsActive = false
+		LocalPlayer().Ghost:Remove()
         LocalPlayer().Ghost = nil
         LocalPlayer().GhostItem = nil
         LocalPlayer().GhostModel = nil

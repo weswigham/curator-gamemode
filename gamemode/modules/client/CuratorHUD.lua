@@ -75,6 +75,7 @@ function CuratorSpawnM:Paint()
 	surface.DrawOutlinedRect(0, 0, self:GetWide(), self:GetTall())
 	local Muny = "$"..math.floor(LocalPlayer():GetNWInt("money"))
 	draw.SimpleText(Muny, "Default", self:GetWide()/2, self:GetTall() - 10, color_black, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	if not LocalPlayer():GetNWInt("Curator") then if ValidEntity(CMenu) then CMenu:SetVisible(false) CMenu:Remove() CMenu = nil MainP:Remove() MainP = nil end gui.EnableScreenClicker(false) self:Remove() end
 end
 vgui.Register("CuratorSpawnM", CuratorSpawnM, "Panel")
 
@@ -92,7 +93,7 @@ function CIcon:OnMousePressed(mc)
 	FancyB.Selected = false
 	EnthusistB.Selected = false
 
-	if CurrentMenu != nil then
+	if CurrentMenu != nil and ValidEntity(CurrentMenu) then
 		if CurrentMenu == self.Child then
 			CurrentMenu:SetVisible(false)
 			MainP:SetVisible(false)
@@ -222,16 +223,3 @@ function PaintOver()
 
 end
 hook.Add("PostRenderVGUI", "PaintOverHook", PaintOver)
-
---[[
-function ShowMouse()
-	RestoreCursorPosition()
-	gui.EnableScreenClicker(true)
-end
-hook.Add("OnSpawnMenuOpen", "ShowMouse", ShowMouse)
-
-function HideMouse()
-	RememberCursorPosition()
-	gui.EnableScreenClicker(false)
-end
-hook.Add("OnSpawnMenuClose", "HideMouse", HideMouse)]]

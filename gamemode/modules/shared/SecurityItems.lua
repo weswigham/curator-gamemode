@@ -47,6 +47,8 @@ function Security.MakeStandardLimitCheckFunc(class)
 	return func
 end
 
+local StdRot = Angle(90,0,0)
+
 Security.AddItem(GetNewItemObject("Survailance Camera",
 "Affords Basic Protection against intruders.",
 1000,
@@ -57,7 +59,7 @@ Security.AddItem(GetNewItemObject("Survailance Camera",
 Security.MakeStandardSpawnFunc("curator_camera"),
 nil,
 Security.MakeStandardLimitCheckFunc("curator_camera"),
-"models/props_combine/combinecamera001.mdl"))
+"models/props_combine/combinecamera001.mdl"):SetAngularOffset(Angle(35,0,0)):SetPosOffset(4))
 
 Security.AddItem(GetNewItemObject("Pressure Plates",
 "Sensitive to thives walking on it.",
@@ -66,10 +68,10 @@ Security.AddItem(GetNewItemObject("Pressure Plates",
 0,
 0,
 0,
-Security.MakeStandardSpawnFunc("curator_pressureplates"),
+Security.MakeStandardSpawnFunc("curator_pressureplate"),
 nil,
-Security.MakeStandardLimitCheckFunc("curator_pressureplates"),
-"models/props_junk/TrashDumpster02b.mdl"))
+Security.MakeStandardLimitCheckFunc("curator_pressureplate"),
+"models/props_junk/TrashDumpster02b.mdl"):SetAngularOffset(StdRot))
 
 Security.AddItem(GetNewItemObject("Laser Emitter",
 "Detects (and hurts) thieves.",
@@ -81,7 +83,7 @@ Security.AddItem(GetNewItemObject("Laser Emitter",
 Security.MakeStandardSpawnFunc("curator_laser"),
 nil,
 Security.MakeStandardLimitCheckFunc("curator_laser"),
-"models/props_combine/combine_mine01.mdl"))
+"models/props_combine/combine_mine01.mdl"):SetAngularOffset(StdRot))
 
 Security.AddItem(GetNewItemObject("Laser Grid",
 "Detects (and hurts) thieves. A step above the emitter.",
@@ -93,7 +95,7 @@ Security.AddItem(GetNewItemObject("Laser Grid",
 Security.MakeStandardSpawnFunc("curator_laser_grid"),
 nil,
 Security.MakeStandardLimitCheckFunc("curator_laser_grid"),
-"models/props_combine/combine_mine01.mdl"))
+"models/props_combine/combine_mine01.mdl"):SetAngularOffset(StdRot))
 
 Security.AddItem(GetNewItemObject("Turret",
 "Okay, this is overkill. Literally.",
@@ -105,4 +107,4 @@ Security.AddItem(GetNewItemObject("Turret",
 Security.MakeStandardSpawnFunc("curator_turret"),
 nil,
 Security.MakeStandardLimitCheckFunc("curator_turret"),
-"models/Combine_turrets/Floor_turret.mdl"))
+"models/Combine_turrets/Floor_turret.mdl"):SetAngularOffset(StdRot))

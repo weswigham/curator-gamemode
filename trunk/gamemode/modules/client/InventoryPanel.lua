@@ -1,5 +1,5 @@
 LocalPlayer().MyItems = {{Model = "models/weapons/w_crowbar.mdl"}, {Model = "models/weapons/w_crowbar.mdl"}, {Model = "models/weapons/w_crowbar.mdl"}, {Model = "models/weapons/w_crowbar.mdl"}, {Model = "models/weapons/w_crowbar.mdl"}}
-local color_grey = Color(30, 30, 30, 200)
+local color_grey = Color(0,0,0,150)
 
 local InvPanel = {}
 function InvPanel:PerformLayout()
@@ -9,7 +9,7 @@ function InvPanel:PerformLayout()
 			self[pos] = vgui.Create("SpawnIcon")
 			self[pos]:SetParent(self)
 			self[pos]:SetModel(v.Model)
-			self[pos]:SetPos(2, k*2 + 64*(k-1))
+			self[pos]:SetPos(22, k*2 + 64*(k-1))
 		end
 	end
 end
@@ -19,8 +19,8 @@ function InvPanel:UpdateItems()
 	Inventory:Remove()
 	Inventory = nil
 	Inventory = vgui.Create("InvPanel")
-	Inventory:SetPos(0, ScrH()/2-(133+32))
-	Inventory:SetSize(68, (268+64))
+	Inventory:SetPos(20, ScrH()/2-(133+32))
+	Inventory:SetSize(88, (268+64))
 	if Open then
 		Inventory:Open()
 	else

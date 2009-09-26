@@ -47,21 +47,46 @@ function GM:PlayerNoClip( ply )
 	return ply.Curator or false
 end
 
+function GM:PlayerDeath(ply,inf,killr)
+	ply:SetTeam(TEAM_DEAD)
+end
+
+function GM:ArrestPlayer(ply)
+	ply:KillSilent()
+	ply:Spectate(OBS_MODE_IN_EYE)
+	ply:SpectateEntity(self.Curator)
+	ply:SetMoveType(MOVETYPE_OBSERVER)
+	ply:SetTeam(TEAM_JAILED)
+	ply:Lock()
+	ply.Arrested = true
+end
+
+function GM:UnArrestPlayer(ply)
+	ply:UnSpectate()
+	ply:SetMoveType(MOVETYPE_WALK)
+	ply:SetTeam(TEAM_THIEF)
+	ply:UnLock()
+	ply.Arrested = false
+end
 
 function GM:PlayerSpawn( pl )
 
 	self.BaseClass.PlayerSpawn( self, pl )
 	if pl ~= self.Curator then
 		pl:SetMoveType(MOVETYPE_WALK)
+		pl:SetNoDraw(false)
+		pl:SetTeam(TEAM_THIEF)
 	else
 		pl:SetMoveType(MOVETYPE_NOCLIP)
 		local tbl = ents.FindByClass("info_curator_start")
 		if tbl[1] then
 			self.Curator:SetPos(table.Random(tbl):GetPos())
 		end
+		pl:SetNoDraw(true)
+		pl:SetTeam(TEAM_CURATOR)
 	end
-	pl:SetNoDraw(false)
 	
+	pl:SetNWInt("Detection",0)
 end
 
 
@@ -159,6 +184,24 @@ function GM:PlayerDisconnected( ply )
 	SelectionWeights[ply] = nil
 end
 
+function GM:TriggerAlarm(sndPos)
+	if not self.Alarming then
+		self.Alarming = true
+		WorldSound("Trainyard.distantsiren",sndPos,165,100)
+		SendUserMessage("StartAlarmCountdown")
+		timer.Simple(15,function() 
+			self.Alarming = false
+			for k,v in ipairs(player.GetAll()) do
+				if v:GetPos():IsInMuseum() then
+					GAMEMODE:ArrestPlayer(v)
+					SendUserMessage("YouBeenArrested",v)
+					timer.Simple(60,function() GAMEMODE:UnArrestPlayer(v) SendUserMessage("YouveBeenReleased",v) end)
+				end
+			end
+		end)
+	end
+end
+
 function GM:Think()
 	if self.Curator and self.Curator:IsValid() then
 		self.Curator:SetMoveType(MOVETYPE_NOCLIP)
@@ -173,24 +216,39 @@ function GM:Think()
 		if tbl[1] then
 			self.Curator:SetPos(table.Random(tbl):GetPos())
 		end
+		for k,v in ipairs(player.GetAll()) do 
+			v:KillSilent()
+			v:PrintMessage(HUD_PRINTTALK,"The Curator Has Changed! You will be respawned!")
+		end
 		self.Curator:SetNWInt("money",10000)
+		umsg.Start("SetupCuratorSpawnMenu", self.Curator)
+		umsg.End()
+		self.Curator:SetTeam(TEAM_CURATOR)
 	else
 		self.Curator = nil
 	end
 	for k,v in ipairs(player.GetAll()) do
 		v:SetNWBool("Curator",v == self.Curator)
-	end
-	local val1,val2,val3 = 0,0,0
-	for k,v in ipairs(ents.FindByClass("curator_*")) do
-		if v.Item then
-			val1 = val1 + v.Item:GetFamilyHappiness()
-			val2 = val2 + v.Item:GetEnthusistHappiness()
-			val3 = val3 + v.Item:GetCollectorHappiness()
+		if v:GetNWInt("Detection") >= 1000 then
+			self:TriggerAlarm(v:GetPos())
+		end
+		if not v:GetPos():IsInMuseum() then
+			v:SetNWInt("Detection",math.Clamp(v:GetNWInt("Detection")-2,0,1000))
 		end
 	end
-	self.Curator:SetNWInt("happ1", math.Clamp(val1,0,100)) 
-	self.Curator:SetNWInt("happ2", math.Clamp(val2,0,100)) 
-	self.Curator:SetNWInt("happ3", math.Clamp(val3,0,100))
+	if self.Curator then
+		local val1,val2,val3 = 0,0,0
+		for k,v in ipairs(ents.FindByClass("curator_*")) do
+			if v.Item then
+				val1 = val1 + v.Item:GetFamilyHappiness()
+				val2 = val2 + v.Item:GetEnthusistHappiness()
+				val3 = val3 + v.Item:GetCollectorHappiness()
+			end
+		end
+		self.Curator:SetNWInt("happ1", math.Clamp(val1,0,100)) 
+		self.Curator:SetNWInt("happ2", math.Clamp(val2,0,100)) 
+		self.Curator:SetNWInt("happ3", math.Clamp(val3,0,100))
+	end
 end 
 
 function GM:ResetMap()
@@ -257,8 +315,12 @@ concommand.Add("curator_spawn_object",function(ply,cmd,args)
     
     if ply == GAMEMODE.Curator and ply:GetNWInt("money") >= item:GetPrice() then
 		if item:LimitCheck() < item:GetLimit() then
-			ply:SetNWInt("money",ply:GetNWInt("money") - item:GetPrice())
-			item:OnSpawn(ply,pos,ang)
+			if pos:IsInMuseum() then
+				ply:SetNWInt("money",ply:GetNWInt("money") - item:GetPrice())
+				item:OnSpawn(ply,pos,ang)
+			else
+				ply:ChatPrint("You can't spawn that "..item:GetName().." outside the museum!")
+			end
 		else
 			ply:ChatPrint("You've hit the limit for "..item:GetName()..". Its limit is "..item:GetLimit()..".")
 		end

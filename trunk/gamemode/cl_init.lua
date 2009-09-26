@@ -1,14 +1,24 @@
 include( 'shared.lua' )
 
-if not SinglePlayer() and not LocalPlayer():IsListenServerHost() then
-	for _, file in ipairs( file.Find( "../lua/"..GM.Folder:gsub( "gamemodes/", "" ).."/gamemode/modules/client/*.lua" ) ) do
+
+
+for _, file in ipairs( file.Find( "../gamemodes/"..GM.Folder:gsub( "gamemodes/", "" ).."/gamemode/modules/client/*.lua" ) ) do
+	include( "modules/client/"..file )
+end
+
+for _, file in ipairs( file.Find( "../gamemodes/"..GM.Folder:gsub( "gamemodes/", "" ).."/gamemode/modules/shared/*.lua" ) ) do
+	include( "modules/shared/"..file )
+end
+
+--if not SinglePlayer() then
+	--[[for _, file in ipairs( file.Find( "../lua/"..GM.Folder:gsub( "gamemodes/", "" ).."/gamemode/modules/client/*.lua" ) ) do
 		include( "modules/client/"..file )
 	end
 
 	for _, file in ipairs( file.Find( "../lua/"..GM.Folder:gsub( "gamemodes/", "" ).."/gamemode/modules/shared/*.lua" ) ) do
 		include( "modules/shared/"..file )
-	end	
-else
+	end	]]
+--[[else
 	for _, file in ipairs( file.Find( "../"..GM.Folder.."/gamemode/modules/client/*.lua" ) ) do
 		include( "modules/client/"..file )
 	end
@@ -16,11 +26,11 @@ else
 	for _, file in ipairs( file.Find( "../"..GM.Folder.."/gamemode/modules/shared/*.lua" ) ) do
 		include( "modules/shared/"..file )
 	end	
-end
+end]]
 
 
 function GM:Initialize()
-
+	self.BaseClass.Initialize( self )
 end
 
 
@@ -33,6 +43,7 @@ local BGCol = Color(0,0,0,150)
 local MoneyCol = Color(100,200,100,250)
 local TimeCol = Color(200,200,100,250)
 local HPCol = Color(240,50,50,250)
+local DetectionCol = Color(30,30,200,250)
 
 local offsetConstant = 10
 
@@ -162,9 +173,100 @@ function GM:HUDPaint()
 		local offx,offy = surface.GetTextSize(Muny)
 	
 		draw.WordBox( 10, ScrW()-(offx+20),ScrH()-(offy+20), Muny, Font, BGCol, MoneyCol)
-	
+		
+		--Detection Bar
+		local tbl = {}
+		tbl["x"] = 0
+		tbl["y"] = 0
+		tbl["w"] = 20
+		tbl["h"] = ScrH()-(ScrH()/5)
+		tbl["color"] = BGCol
+		tbl["texture"] = draw.NoTexture()
+		draw.TexturedQuad(tbl)
+		
+		local tbl = {}
+		tbl["x"] = 5
+		tbl["y"] = 5
+		tbl["w"] = 10
+		tbl["h"] = ((ScrH()-(ScrH()/5))-10)*(LocalPlayer():GetNWInt("Detection")/1000) --yes, it's a number out of 1000. It's more accurate.
+		tbl["color"] = DetectionCol
+		tbl["texture"] = draw.NoTexture()
+		draw.TexturedQuad(tbl)
 	end
 end
+
+function LerpColor(frac,from,to)
+	local col = Color(
+		Lerp(frac,from.r,to.r),
+		Lerp(frac,from.g,to.g),
+		Lerp(frac,from.b,to.b),
+		Lerp(frac,from.a,to.a)
+	)
+	return col
+end
+
+
+usermessage.Hook("StartAlarmCountdown",function(um)
+	local AlarmTimestamp = RoundTimer.GetCurrentTime()
+	local EndTime = AlarmTimestamp - 15
+	hook.Add("HUDPaint","AlarmWarning",function()
+		local Time = string.ToMinutesSeconds(math.Clamp(RoundTimer.GetCurrentTime()-EndTime,0,120))
+		surface.SetFont(Font)
+		local offx,offy = surface.GetTextSize(Time)
+		
+		draw.WordBox( 5, (ScrW()/2)-(offx/2)-5, (ScrH()-offy)-5, Time, Font, BGCol, LerpColor(math.sin(CurTime()*10),HPCol,TimeCol))
+		
+		local Text = "Someone has triggered the alarm!"
+		local Text2 = "Get out of the museum NOW!"
+		local ox,oy = surface.GetTextSize(Text)
+		local ox2,oy2 = surface.GetTextSize(Text2)
+		
+		draw.SimpleText(Text,Font,(ScrW()/2)-(ox/2),ScrH()-(offy+5)-oy-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
+		draw.SimpleText(Text2,Font,(ScrW()/2)-(ox2/2),ScrH()-(offy+5)-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
+	end)
+	timer.Simple(15,function() 
+		hook.Remove("HUDPaint","AlarmWarning")
+	end)
+end)
+
+usermessage.Hook("YouBeenArrested",function(um)
+	local ArrestTimestamp = RoundTimer.GetCurrentTime()
+	local EndTime = ArrestTimestamp - 60
+	hook.Add("HUDPaint","Arrested",function()
+		local Time = string.ToMinutesSeconds(math.Clamp(RoundTimer.GetCurrentTime()-EndTime,0,120))
+		surface.SetFont(Font)
+		local offx,offy = surface.GetTextSize(Time)
+		
+		draw.WordBox( 5, (ScrW()/2)-(offx/2)-5, (ScrH()-offy)-5, Time, Font, BGCol, TimeCol)
+		
+		local Text = "Oh no, you got caught in the museum!"
+		local Text2 = "Better luck next time."
+		
+		local ox,oy = surface.GetTextSize(Text)
+		local ox2,oy2 = surface.GetTextSize(Text2)
+		
+		draw.SimpleText(Text,Font,(ScrW()/2)-(ox/2),ScrH()-(offy+5)-oy-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
+		draw.SimpleText(Text2,Font,(ScrW()/2)-(ox2/2),ScrH()-(offy+5)-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
+	end)
+end)
+
+usermessage.Hook("YouveBeenReleased",function(um)
+	hook.Remove("HUDPaint","Arrested")
+	hook.Add("HUDPaint","Freed",function()
+		surface.SetFont(Font)
+		
+		local Text = "You've been released from prison!"
+		local Text2 = "Time to resume your life of crime!"
+		local ox,oy = surface.GetTextSize(Text)
+		local ox2,oy2 = surface.GetTextSize(Text2)
+		
+		draw.SimpleText(Text,Font,(ScrW()/2)-(ox/2),ScrH()-(offy+5)-oy-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
+		draw.SimpleText(Text2,Font,(ScrW()/2)-(ox2/2),ScrH()-(offy+5)-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
+	end)
+	timer.Simple(5,function() 
+		hook.Remove("HUDPaint","Freed")
+	end)
+end)
 
 local function KeyPressed(ply, code)
 	if ply:GetNWBool("Curator") and code == IN_SPEED then
@@ -216,24 +318,32 @@ hook.Add("OnSpawnMenuClose", "CloseInventory", CloseInventory)
 
 
 function SetupCMenu(msg)
+	 if ValidEntity(CMenu) then CMenu:SetVisible(false) CMenu:Remove() CMenu = nil end
 	CMenu = vgui.Create("CuratorSpawnM")
 	CMenu:SetSize(134, 152)
 	CMenu:SetPos(5, 5)
 end
 usermessage.Hook("SetupCuratorSpawnMenu", SetupCMenu)
 
+local yaw = Angle(0,1,0)
+local AddAng = Angle(0,0,0)
 
 function GM:Think()
 	if LocalPlayer().GhostIsActive then
 		local tr = LocalPlayer():GetEyeTrace()
-		if tr and tr.Hit and (not tr.HitSkybox) and not tr.HitNoDraw then
+		if tr and tr.Hit and (not tr.HitSkybox) and tr.HitWorld and not tr.HitNoDraw then
 			if (not LocalPlayer().Ghost) or not LocalPlayer().Ghost:IsValid() then
 				LocalPlayer().Ghost = ClientsideModel(LocalPlayer().GhostModel, RENDERGROUP_OPAQUE)
 			end
 			LocalPlayer().Ghost:SetModel(LocalPlayer().GhostModel or "")
 			LocalPlayer().Ghost:SetPos(tr.HitPos+(tr.HitNormal*LocalPlayer().GhostItem:GetPosOffset()))
-			LocalPlayer().Ghost:SetAngles(tr.HitNormal:Angle()+LocalPlayer().GhostItem:AngularOffset())
+			LocalPlayer().Ghost:SetAngles(tr.HitNormal:Angle()+LocalPlayer().GhostItem:AngularOffset()+AddAng)
 			LocalPlayer().Ghost:SetNoDraw(false)
+			if input.IsKeyDown(KEY_LBRACKET) then
+				AddAng = AddAng - yaw
+			elseif input.IsKeyDown(KEY_RBRACKET) then
+				AddAng = AddAng + yaw
+			end
 		elseif LocalPlayer().Ghost and LocalPlayer.Ghost:IsValid() then
 			LocalPlayer().Ghost:SetNoDraw(true)
 		end
@@ -252,13 +362,15 @@ function GM:GUIMousePressed(mc)
         LocalPlayer().GhostItem = nil
         LocalPlayer().GhostModel = nil
         LocalPlayer().GhostType = nil
+		AddAng = Angle(0,0,0)
 	elseif LocalPlayer().GhostIsActive and mc == 108 then
 		LocalPlayer().GhostIsActive = false
-		LocalPlayer().Ghost:Remove()
+		if LocalPlayer().Ghost then LocalPlayer().Ghost:Remove() end
         LocalPlayer().Ghost = nil
         LocalPlayer().GhostItem = nil
         LocalPlayer().GhostModel = nil
         LocalPlayer().GhostType = nil
+		AddAng = Angle(0,0,0)
     end
 end 
 
@@ -267,7 +379,8 @@ concommand.Add("OpenEndGameWindow", function()
     ply.Endgame = vgui.Create("DPanel")
     ply.Endgame:SetPos(0,0)
     ply.Endgame:SetSize(ScrW(),ScrH())
-
+	
+	WorldSound("TV.Tune",ply:GetPos(),165,100)
 end)
 
 concommand.Add("CloseEndGameWindow", function()

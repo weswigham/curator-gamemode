@@ -17,14 +17,51 @@ end
 local Player = FindMetaTable("Player")
 function Player:HasItems(tbl)
 	if tbl then
-	for k,v in ipairs(tbl) do
-		if not table.HasValue(self.ItemList,v) then
-			return false
+	
+		for k,v in ipairs(tbl) do
+			local found = false
+			for kz,vz in ipairs(self.ItemList) do
+				if string.lower(vz:GetName()) == string.lower(v) then
+					found = true
+				end
+			end
+			if found == false then 
+				return false 
+			end
 		end
+		
+		return true
+	else 
+		return false 
 	end
-	return true
-	else return false end
 end 
+
+if (SERVER) then
+function Player:GiveStolenItem(item,entToRemoveOnSell)
+	table.insert(self.ItemList,{Item=item,Entity=entToRemoveOnSell})
+end
+
+function Player:SellItem(index)
+	self:SetNWInt("money",math.ceil(self:GetNWInt("money")+self.ItemList[index]:GetPrice()))
+	table.remove(self.ItemList,index)
+end
+
+function Player:SendItems()
+	for k,v in ipairs(self.ItemList) do
+		SendUserMessage("RecieveItems",self,k,glon.encode(v))
+	end
+end
+
+elseif (CLIENT) then
+
+usermessage.Hook("RecieveItems",function(um)
+	local index = um:ReadLong()
+	local item = glon.decode(um:ReadString())
+	
+	LocalPlayer().MyItems = {}
+	LocalPlayer().MyItems[index] = item
+end)
+end
 
 function Entity:IsInCone(p1,p2,Radius)
 	local dist = p1:Distance(p2)

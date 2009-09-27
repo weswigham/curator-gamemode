@@ -31,6 +31,7 @@ end]]
 
 function GM:Initialize()
 	self.BaseClass.Initialize( self )
+	LocalPlayer().ItemList = {}
 end
 
 
@@ -44,6 +45,7 @@ local MoneyCol = Color(100,200,100,250)
 local TimeCol = Color(200,200,100,250)
 local HPCol = Color(240,50,50,250)
 local DetectionCol = Color(30,30,200,250)
+local WhiteCol = Color(255,255,255,255)
 
 local offsetConstant = 10
 
@@ -260,12 +262,58 @@ usermessage.Hook("YouveBeenReleased",function(um)
 		local ox,oy = surface.GetTextSize(Text)
 		local ox2,oy2 = surface.GetTextSize(Text2)
 		
-		draw.SimpleText(Text,Font,(ScrW()/2)-(ox/2),ScrH()-(offy+5)-oy-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
-		draw.SimpleText(Text2,Font,(ScrW()/2)-(ox2/2),ScrH()-(offy+5)-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
+		draw.SimpleText(Text,Font,(ScrW()/2)-(ox/2),ScrH()-10-oy-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
+		draw.SimpleText(Text2,Font,(ScrW()/2)-(ox2/2),ScrH()-10-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
 	end)
 	timer.Simple(5,function() 
 		hook.Remove("HUDPaint","Freed")
 	end)
+end)
+
+usermessage.Hook("StealingProgressBar",function(um)
+	local StartTheft = CurTime()
+	local Duration = 5
+	hook.Add("HUDPaint","Stealing",function()
+		local frac = (CurTime()-StartTheft)/Duration
+		local tIDFont = "TargetID"
+		surface.SetFont(tIDFont)
+		
+		local sizeX = 150
+		local SizeY = 30
+		
+		local tbl = {}
+		tbl["x"] = (ScrW()/2)-(SizeX/2)
+		tbl["y"] = 0
+		tbl["w"] = SizeX
+		tbl["h"] = SizeY
+		tbl["color"] = BGCol
+		tbl["texture"] = draw.NoTexture()
+		draw.TexturedQuad(tbl)
+		
+		local tbl = {}
+		tbl["x"] = (ScrW()/2)-(SizeX/2)-3
+		tbl["y"] = 3
+		tbl["w"] = (SizeX-6)*frac
+		tbl["h"] = SizeY-6
+		tbl["color"] = DetectionCol
+		tbl["texture"] = draw.NoTexture()
+		draw.TexturedQuad(tbl)
+		
+		local Text = "Stealing..."
+		
+		draw.SimpleText(Text,tIDFont,(ScrW()/2)-(SizeX/2),15,WhiteCol,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	end)
+	timer.Simple(5,function() 
+		hook.Remove("HUDPaint","Stealing")
+	end)
+end)
+
+usermessage.Hook("OpenThiefBuyMenu",function(um)
+	if not ValidEntity(LocalPlayer().BuyMenu) then
+		LocalPlayer().BuyMenu = vgui.Create("ThiefMenu")
+	else
+		LocalPlayer().BuyMenu:Remove()
+	end
 end)
 
 local function KeyPressed(ply, code)

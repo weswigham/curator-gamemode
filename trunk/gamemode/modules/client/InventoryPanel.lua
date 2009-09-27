@@ -1,15 +1,16 @@
-LocalPlayer().MyItems = {{Model = "models/weapons/w_crowbar.mdl"}, {Model = "models/weapons/w_crowbar.mdl"}, {Model = "models/weapons/w_crowbar.mdl"}, {Model = "models/weapons/w_crowbar.mdl"}, {Model = "models/weapons/w_crowbar.mdl"}}
 local color_grey = Color(0,0,0,150)
 
 local InvPanel = {}
 function InvPanel:PerformLayout()
 	if !ValidEntity(self["Slot1"]) then
-		for k,v in ipairs(LocalPlayer().MyItems) do
-			local pos = "Slot"..k
-			self[pos] = vgui.Create("SpawnIcon")
-			self[pos]:SetParent(self)
-			self[pos]:SetModel(v.Model)
-			self[pos]:SetPos(22, k*2 + 64*(k-1))
+		if LocalPlayer().MyItems then
+			for k,v in ipairs(LocalPlayer().MyItems) do
+				local pos = "Slot"..k
+				self[pos] = vgui.Create("SpawnIcon")
+				self[pos]:SetParent(self)
+				self[pos]:SetModel(v:GetModel())
+				self[pos]:SetPos(22, k*2 + 64*(k-1))
+			end
 		end
 	end
 end

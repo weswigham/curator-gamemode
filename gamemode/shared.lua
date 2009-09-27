@@ -42,23 +42,37 @@ function Player:GiveStolenItem(item,entToRemoveOnSell)
 end
 
 function Player:SellItem(index)
+	if not self.ItemList[tonumber(index)] then self:ChatPrint("Wait, you don't have anything in that item slot...Hmmm") return end
 	self:SetNWInt("money",math.ceil(self:GetNWInt("money")+self.ItemList[index]:GetPrice()))
 	table.remove(self.ItemList,index)
 end
 
 function Player:SendItems()
-	for k,v in ipairs(self.ItemList) do
-		SendUserMessage("RecieveItems",self,k,glon.encode(v))
+	for k,v in pairs(self.ItemList) do
+		SendUserMessage("RecieveItems",self,k,v.Item:GetName())
 	end
+end
+
+function Player:GetItems()
+	return self.ItemList or {}
 end
 
 elseif (CLIENT) then
 
+function Player:GetItems()
+	return self.MyItems or {}
+end
+
 usermessage.Hook("RecieveItems",function(um)
 	local index = um:ReadLong()
-	local item = glon.decode(um:ReadString())
+	local item = um:ReadString()
+	for k,v in ipairs({"Family","Fancy","Enthusist","Thief","Security"}) do
+		if _G[v].GetItem(item) then item = _G[v].GetItem(item) end
+	end
 	
-	LocalPlayer().MyItems = {}
+	if index == 1 then
+		LocalPlayer().MyItems = {}
+	end
 	LocalPlayer().MyItems[index] = item
 end)
 end

@@ -63,14 +63,37 @@ function Thief.MakeStandardJunkCheckFunc(name)
 end
 
 Thief.AddItem(GetNewItemObject("Lockpick",
-"Opens locked doors.", 
+"Opens (some) locked doors.", 
 500, 
 -1, 
 0,
 0, 
 0, 
-Thief.MakeStandardSpawnFunc("curator_junk"),
+nil,
 nil, 
-Thief.MakeStandardJunkCheckFunc("Lockpick"), 
+nil, 
 "models/props_c17/Frame002a.mdl"))
 
+Thief.AddItem(GetNewItemObject("Crowbar",
+"Beats shit down, maaan.", 
+500, 
+-1, 
+0,
+0, 
+0, 
+nil,
+nil, 
+nil, 
+"models/props_c17/Frame002a.mdl"))
+
+Thief.AddItem(GetNewItemObject("Explosive",
+"Opens large, reinforced locked doors.", 
+1500, 
+-1, 
+0,
+0, 
+0, 
+nil,
+nil, 
+nil, 
+"models/props_c17/Frame002a.mdl"))

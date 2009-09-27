@@ -38,8 +38,12 @@ local function KeyPressed(ply, code)
 		local tr = util.QuickTrace(ply:GetShootPos(),ply:GetAimVector()*200,ply)
 		if tr.Hit and (not tr.HitSkybox) then
 			for k,v in ipairs(ents.FindByClass("trigger_event")) do
-				if v:IsPosInBounds(tr.HitPos) and ply:HasItems(v.ReqItems) then
-					v:Input("ValidActivate")
+				if v:IsPosInBounds(tr.HitPos) then
+					if ply:HasItems(v.ReqItems) then
+						v:Input("ValidActivate")
+					else
+						ply:ChatPrint("This event requires "..table.concat(v.ReqItems," and ").." to run.")
+					end
 				end
 			end
 		end
@@ -365,6 +369,12 @@ end)
 
 concommand.Add("SellItem", function(ply,cmd,arg)
 	ply:SellItem(arg[1])
+	ply:SendItems()
+end)
+
+concommand.Add("BuyItem", function(ply,cmd,arg)
+	ply:BuyItem(arg[1])
+	ply:SendItems()
 end)
 
 

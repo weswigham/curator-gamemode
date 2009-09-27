@@ -423,10 +423,30 @@ function GM:GUIMousePressed(mc)
 end 
 
 concommand.Add("OpenEndGameWindow", function()
+	local CurCash = 0
+	local ThiefCash = 0
+	local Winner = ""
+	for k,v in ipairs(player.GetAll()) do
+		if v:GetNWBool("Curator") then
+			CurCash = v:GetNWInt("money")
+		else
+			ThiefCash = ThiefCash + v:GetNWInt("money")
+		end
+	end
+	if CurCash >= ThiefCash then
+		Winner = "The Curator has won!"
+	else
+		Winner = "The Thieves have won!"
+	end
     local ply = LocalPlayer()
     ply.Endgame = vgui.Create("DPanel")
     ply.Endgame:SetPos(0,0)
     ply.Endgame:SetSize(ScrW(),ScrH())
+	ply.Endgame.PaintOver = function()
+		draw.SimpleText(Winner,Font,(ScrW()/2),40,WhiteCol,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.RoundedBox(20,20,100,ScrW()-40,(ScrH()-100)/2-30,BGCol)
+		draw.RoundedBox(20,20,(ScrH()-100)/2+30,ScrW()-40,ScrH()-160,BGCol)
+	end
 	
 	WorldSound("TV.Tune",ply:GetPos(),165,100)
 end)

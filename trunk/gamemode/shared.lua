@@ -17,13 +17,13 @@ end
 local Player = FindMetaTable("Player")
 function Player:HasItems(tbl)
 	if tbl then
-	
 		for k,v in ipairs(tbl) do
 			local found = false
 			for kz,vz in ipairs(self.ItemList) do
 				if string.lower(vz:GetName()) == string.lower(v) then
 					found = true
 				end
+				print(string.lower(v),string.lower(vz:GetName()),found)
 			end
 			if found == false then 
 				return false 
@@ -43,8 +43,9 @@ end
 
 function Player:SellItem(index)
 	if not self.ItemList[tonumber(index)] then self:ChatPrint("Wait, you don't have anything in that item slot...Hmmm") return end
-	self:SetNWInt("money",math.ceil(self:GetNWInt("money")+self.ItemList[index]:GetPrice()))
-	table.remove(self.ItemList,index)
+	self:SetNWInt("money",math.ceil(self:GetNWInt("money")+self.ItemList[tonumber(index)].Item:GetPrice()))
+	if self.ItemList[tonumber(index)].Entity then self.ItemList[tonumber(index)].Entity:Remove() end 
+	table.remove(self.ItemList,tonumber(index))
 end
 
 function Player:SendItems()
@@ -55,6 +56,23 @@ end
 
 function Player:GetItems()
 	return self.ItemList or {}
+end
+
+function Player:BuyItem(name)
+	local item = Thief.GetItem(name)
+	if item then
+		if self:GetNWInt("money") >= item:GetPrice() then
+			if #self.ItemList >= 5 then
+				self:ChatPrint("You don't have any free inventory slots!")
+			else
+				table.insert(self.ItemList,{Item=item})
+			end
+		else
+			self:ChatPrint("You don't have enought cash to buy "..name..".")
+		end
+	else
+		self:ChatPrint("Item "..name.." doesn't appear to exist.")
+	end
 end
 
 elseif (CLIENT) then
@@ -74,6 +92,8 @@ usermessage.Hook("RecieveItems",function(um)
 		LocalPlayer().MyItems = {}
 	end
 	LocalPlayer().MyItems[index] = item
+	
+	if LocalPlayer().BuyMenu and ValidEntity(LocalPlayer().BuyMenu) then LocalPlayer().BuyMenu:InvalidateLayout() end
 end)
 end
 

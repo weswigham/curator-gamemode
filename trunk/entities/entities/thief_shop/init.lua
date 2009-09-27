@@ -10,6 +10,10 @@ function ENT:Initialize()
 	self:SetSolid( SOLID_VPHYSICS )
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetUseType(SIMPLE_USE)
+	local phys = self:GetPhysicsObject()
+	if phys and phys:IsValid() then
+		phys:EnableMotion(false)
+	end
 
 end
 

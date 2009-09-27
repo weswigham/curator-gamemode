@@ -17,6 +17,7 @@ end
 
 function InvPanel:UpdateItems()
 	local Open = Inventory:IsVisible()
+	RunConsoleCommand("UpdateItems")
 	Inventory:Remove()
 	Inventory = nil
 	Inventory = vgui.Create("InvPanel")
@@ -30,6 +31,7 @@ function InvPanel:UpdateItems()
 end
 
 function InvPanel:Open()
+	RunConsoleCommand("UpdateItems")
 	self:SetVisible(true)
 	RestoreCursorPosition()
 	gui.EnableScreenClicker(true)

@@ -278,7 +278,7 @@ usermessage.Hook("StealingProgressBar",function(um)
 		local tIDFont = "TargetID"
 		surface.SetFont(tIDFont)
 		
-		local sizeX = 150
+		local SizeX = 150
 		local SizeY = 30
 		
 		local tbl = {}
@@ -291,7 +291,7 @@ usermessage.Hook("StealingProgressBar",function(um)
 		draw.TexturedQuad(tbl)
 		
 		local tbl = {}
-		tbl["x"] = (ScrW()/2)-(SizeX/2)-3
+		tbl["x"] = (ScrW()/2)-(SizeX/2)+3
 		tbl["y"] = 3
 		tbl["w"] = (SizeX-6)*frac
 		tbl["h"] = SizeY-6
@@ -301,7 +301,7 @@ usermessage.Hook("StealingProgressBar",function(um)
 		
 		local Text = "Stealing..."
 		
-		draw.SimpleText(Text,tIDFont,(ScrW()/2)-(SizeX/2),15,WhiteCol,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(Text,tIDFont,(ScrW()/2),15,WhiteCol,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end)
 	timer.Simple(5,function() 
 		hook.Remove("HUDPaint","Stealing")
@@ -310,7 +310,7 @@ end)
 
 usermessage.Hook("OpenThiefBuyMenu",function(um)
 	if not ValidEntity(LocalPlayer().BuyMenu) then
-		LocalPlayer().BuyMenu = vgui.Create("ThiefMenu")
+		LocalPlayer().BuyMenu = vgui.Create("ThiefShop")
 	else
 		LocalPlayer().BuyMenu:Remove()
 	end
@@ -347,8 +347,8 @@ local function OpenInventory()
 			LocalPlayer().Inventory:Open()
 		else
 			LocalPlayer().Inventory = vgui.Create("InvPanel")
-			LocalPlayer().Inventory:SetPos(0, ScrH()/2-133)
-			LocalPlayer().Inventory:SetSize(68, 266)
+			LocalPlayer().Inventory:SetPos(20, ScrH()/2-(133+32))
+			LocalPlayer().Inventory:SetSize(88, (268+64))
 			LocalPlayer().Inventory:Open()
 		end
 	end
@@ -392,10 +392,10 @@ function GM:Think()
 			elseif input.IsKeyDown(KEY_RBRACKET) then
 				AddAng = AddAng + yaw
 			end
-		elseif LocalPlayer().Ghost and LocalPlayer.Ghost:IsValid() then
+		elseif LocalPlayer().Ghost and LocalPlayer().Ghost:IsValid() then
 			LocalPlayer().Ghost:SetNoDraw(true)
 		end
-	elseif LocalPlayer().Ghost and LocalPlayer.Ghost:IsValid() then
+	elseif LocalPlayer().Ghost and LocalPlayer().Ghost:IsValid() then
 		LocalPlayer().Ghost:SetNoDraw(true)
 	end
 end 

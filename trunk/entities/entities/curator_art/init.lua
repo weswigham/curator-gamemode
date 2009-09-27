@@ -10,12 +10,16 @@ function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetUseType(SIMPLE_USE)
 
+	local phys = self:GetPhysicsObject()
+	if phys and phys:IsValid() then
+		phys:EnableMotion(false)
+	end
 end
 
 function ENT:Think()
 	if self.Fading then
 		if CurTime() <= self.FadeEndTime then
-			local frac = 150*((CurTime()-self.FadeStartTime)/(self.FadeEndTime-self.FadeStartTime))
+			local frac = 150*(1-((CurTime()-self.FadeStartTime)/(self.FadeEndTime-self.FadeStartTime)))
 			self:SetColor(255,255,255,105+frac)
 		end
 	end
@@ -27,7 +31,11 @@ end
 
 function ENT:Use(ply,callr)
 	if ply ~= GAMEMODE.Curator then
-		GAMEMODE:StealArt(ply,self,self.Item)
+		if not self.Fading then
+			GAMEMODE:StealArt(ply,self,self.Item)
+		else
+			ply:ChatPrint("Someone's already in the process of stealing this!")
+		end
 	end
 end 
 

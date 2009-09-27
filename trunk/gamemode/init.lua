@@ -22,8 +22,16 @@ end
 
 
 function GM:Initialize()
-	
 end
+
+local function CurInitPostEntity()
+	for k,v in ipairs(ents.FindByClass("info_round_info")) do
+		local ent = ents.Create("thief_shop")
+		ent:SetPos(v:GetPos())
+		ent:Spawn()
+	end
+end
+hook.Add("InitPostEntity","CuratorInitPostEntity",CurInitPostEntity)
 
 local function KeyPressed(ply, code)
 	if (not ply:GetNWBool("Curator")) and code == IN_USE then
@@ -350,6 +358,15 @@ concommand.Add("curator_spawn_object",function(ply,cmd,args)
     end
 
 end)
+
+concommand.Add("UpdateItems",function(ply,com,arg)
+	ply:SendItems()
+end)
+
+concommand.Add("SellItem", function(ply,cmd,arg)
+	ply:SellItem(arg[1])
+end)
+
 
 hook.Add("RoundStarted","CuratorRoundStart",function() 
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do

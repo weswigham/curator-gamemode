@@ -83,6 +83,8 @@ local HapB3MovingControl = Bezier.Point(offsetConstant+move,ScrH())
 
 function GM:HUDPaint()
 
+	if LocalPlayer():Team() == TEAM_DEAD then return end
+	
 	GAMEMODE:HUDDrawTargetID()
 	GAMEMODE:DrawDeathNotice( 0.9, 0.1 )
 	
@@ -186,14 +188,25 @@ function GM:HUDPaint()
 		tbl["texture"] = draw.NoTexture()
 		draw.TexturedQuad(tbl)
 		
-		local tbl = {}
-		tbl["x"] = 5
-		tbl["y"] = 5
-		tbl["w"] = 10
-		tbl["h"] = ((ScrH()-(ScrH()/5))-10)*(LocalPlayer():GetNWInt("Detection")/1000) --yes, it's a number out of 1000. It's more accurate.
-		tbl["color"] = DetectionCol
-		tbl["texture"] = draw.NoTexture()
-		draw.TexturedQuad(tbl)
+		if LocalPlayer():GetNWInt("Detection") < 750 then
+			local tbl = {}
+			tbl["x"] = 5
+			tbl["y"] = 5
+			tbl["w"] = 10
+			tbl["h"] = ((ScrH()-(ScrH()/5))-10)*(LocalPlayer():GetNWInt("Detection")/1000) --yes, it's a number out of 1000. It's more accurate.
+			tbl["color"] = DetectionCol
+			tbl["texture"] = draw.NoTexture()
+			draw.TexturedQuad(tbl)
+		else
+			local tbl = {}
+			tbl["x"] = 5
+			tbl["y"] = 5
+			tbl["w"] = 10
+			tbl["h"] = ((ScrH()-(ScrH()/5))-10)*(LocalPlayer():GetNWInt("Detection")/1000)
+			tbl["color"] = LerpColor(math.sin(CurTime()*10),DetectionCol,HPCol)
+			tbl["texture"] = draw.NoTexture()
+			draw.TexturedQuad(tbl)
+		end
 	end
 end
 
@@ -305,6 +318,8 @@ usermessage.Hook("StealingProgressBar",function(um)
 	end)
 	timer.Simple(5,function() 
 		hook.Remove("HUDPaint","Stealing")
+		LocalPlayer().Inventory:UpdateItems()
+		LocalPlayer().Inventory:Close()
 	end)
 end)
 
@@ -438,6 +453,7 @@ concommand.Add("OpenEndGameWindow", function()
 	else
 		Winner = "The Thieves have won!"
 	end
+		
     local ply = LocalPlayer()
     ply.Endgame = vgui.Create("DPanel")
     ply.Endgame:SetPos(0,0)
@@ -445,9 +461,44 @@ concommand.Add("OpenEndGameWindow", function()
 	ply.Endgame.PaintOver = function()
 		draw.SimpleText(Winner,Font,(ScrW()/2),40,WhiteCol,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		draw.RoundedBox(20,20,100,ScrW()-40,(ScrH()-100)/2-30,BGCol)
-		draw.RoundedBox(20,20,(ScrH()-100)/2+30,ScrW()-40,ScrH()-160,BGCol)
+		draw.RoundedBox(20,20,(ScrH()-100)/2+100,ScrW()-40,ScrH()-((ScrH()-100)/2+100)-30,BGCol)
+			
+		local tIDFont = "TargetID"
+		surface.SetFont(tIDFont)
+		
+		local fntw,fnth = surface.GetTextSize(tIDFont)
+		
+		local MaxNumPlayersShown = math.floor(((ScrH()-100)/2-30)/(fnth+4))
+		
+		local thieves = player.GetAll( )
+		local removal = nil
+		for k,v in ipairs(thieves) do
+			if v:GetNWBool("Curator") then
+				removal = k
+				break
+			end
+		end
+		if removal then
+			table.remove(thieves,removal)
+		end
+		
+		
+		for i=1,MaxNumPlayersShown do
+			if thieves[i] and i ~= MaxNumPlayersShown then
+				local dat = thieves[i]
+				draw.SimpleText(dat:Nick(),tIDFont,24,100+((fnth+4)*i),team.GetColor(dat:GetTeam()),TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+			elseif i == MaxNumPlayersShown then
+				local Text = "Total Cash: $"..ThiefCash
+				local ox,oy = surface.GetTextSize(Text)
+				draw.SimpleText(Text,tIDFont,ScrW()-ox-24,100+((fnth+4)*i),HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+			end
+		end
 	end
 	
+	hook.Remove("HUDPaint","Stealing")
+	hook.Remove("HUDPaint","Freed")
+	hook.Remove("HUDPaint","Arrested")
+	hook.Remove("HUDPaint","AlarmWarning")
 	WorldSound("TV.Tune",ply:GetPos(),165,100)
 end)
 

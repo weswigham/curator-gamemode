@@ -86,6 +86,18 @@ nil,
 nil, 
 "models/props_c17/Frame002a.mdl"))
 
+Thief.AddItem(GetNewItemObject("Rope",
+"Helps ya in.", 
+500, 
+-1, 
+0,
+0, 
+0, 
+nil,
+nil, 
+nil, 
+"models/props_c17/Frame002a.mdl"))
+
 Thief.AddItem(GetNewItemObject("Explosive",
 "Opens large, reinforced locked doors.", 
 1500, 

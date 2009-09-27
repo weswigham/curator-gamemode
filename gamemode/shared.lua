@@ -15,15 +15,18 @@ function Entity:IsPosInBounds(pos)
 end
 
 local Player = FindMetaTable("Player")
+
+if (SERVER) then
+
 function Player:HasItems(tbl)
 	if tbl then
 		for k,v in ipairs(tbl) do
 			local found = false
 			for kz,vz in ipairs(self.ItemList) do
-				if string.lower(vz:GetName()) == string.lower(v) then
+				if string.lower(vz.Item:GetName()) == string.lower(v) then
 					found = true
 				end
-				print(string.lower(v),string.lower(vz:GetName()),found)
+				print(string.lower(v),string.lower(vz.Item:GetName()),found)
 			end
 			if found == false then 
 				return false 
@@ -36,7 +39,6 @@ function Player:HasItems(tbl)
 	end
 end 
 
-if (SERVER) then
 function Player:GiveStolenItem(item,entToRemoveOnSell)
 	table.insert(self.ItemList,{Item=item,Entity=entToRemoveOnSell})
 end
@@ -52,6 +54,9 @@ function Player:SendItems()
 	for k,v in pairs(self.ItemList) do
 		SendUserMessage("RecieveItems",self,k,v.Item:GetName())
 	end
+	if self.ItemList == {} then
+		SendUserMessage("RecieveItems",self,1,"Empty")
+	end
 end
 
 function Player:GetItems()
@@ -65,6 +70,7 @@ function Player:BuyItem(name)
 			if #self.ItemList >= 5 then
 				self:ChatPrint("You don't have any free inventory slots!")
 			else
+				self:SetNWInt("money",self:GetNWInt("money")-item:GetPrice())
 				table.insert(self.ItemList,{Item=item})
 			end
 		else
@@ -84,16 +90,23 @@ end
 usermessage.Hook("RecieveItems",function(um)
 	local index = um:ReadLong()
 	local item = um:ReadString()
-	for k,v in ipairs({"Family","Fancy","Enthusist","Thief","Security"}) do
-		if _G[v].GetItem(item) then item = _G[v].GetItem(item) end
-	end
+	if item ~= "Empty" then
+		for k,v in ipairs({"Family","Fancy","Enthusist","Thief","Security"}) do
+			if _G[v].GetItem(item) then item = _G[v].GetItem(item) end
+		end
 	
-	if index == 1 then
+		if index == 1 then
+			LocalPlayer().MyItems = {}
+		end
+		LocalPlayer().MyItems[index] = item
+	
+		if LocalPlayer().BuyMenu and ValidEntity(LocalPlayer().BuyMenu) and ValidEntity(LocalPlayer().BuyMenu.BG) then LocalPlayer().BuyMenu.BG:OldClose() LocalPlayer().BuyMenu:InvalidateLayout() end
+		if Inventory and ValidEntity(Inventory) then Inventory:InvalidateLayout() end
+	else
 		LocalPlayer().MyItems = {}
+		if LocalPlayer().BuyMenu and ValidEntity(LocalPlayer().BuyMenu) and ValidEntity(LocalPlayer().BuyMenu.BG) then LocalPlayer().BuyMenu.BG:OldClose() LocalPlayer().BuyMenu:InvalidateLayout() end
+		if Inventory and ValidEntity(Inventory) then Inventory:InvalidateLayout() end
 	end
-	LocalPlayer().MyItems[index] = item
-	
-	if LocalPlayer().BuyMenu and ValidEntity(LocalPlayer().BuyMenu) then LocalPlayer().BuyMenu:InvalidateLayout() end
 end)
 end
 

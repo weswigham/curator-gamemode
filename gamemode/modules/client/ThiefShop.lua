@@ -7,7 +7,7 @@ function ThiefShop:PerformLayout()
 	self.BG:SetPos(ScrW()/2-400,ScrH()/2-300)
 	if not self.BG.OldClose then
 		self.BG.OldClose = self.BG.Close
-		self.BG.Close = function(BG) self:Remove() BG:OldClose() gui.EnableScreenClicker(false) end
+		self.BG.Close = function(BG) BG:OldClose() gui.EnableScreenClicker(false) end
 	end
 	
 	if not ValidEntity(self.TopList) then self.TopList = vgui.Create("DPanelList",self.BG) end
@@ -39,10 +39,12 @@ function ThiefShop:PerformLayout()
 		self.TopList:AddItem(Icon)
 	end
 	
+	self.TopList:InvalidateLayout()
+	
 	if not ValidEntity(self.BottomList) then self.BottomList = vgui.Create("DPanelList",self.BG) end
 	self.BottomList:Clear()
 	
-	self.BottomList:SetPos(4,((600-31)/2)+10)
+	self.BottomList:SetPos(4,((600-31)/2)+20)
 	self.BottomList:SetSize(800-8,(600-31)/2-10)
 	self.BottomList:EnableHorizontal(true)
 
@@ -65,11 +67,14 @@ function ThiefShop:PerformLayout()
 		self.BottomList:AddItem(Icon)
 	end
 	
+	
+	self.BottomList:InvalidateLayout()
+	
 	gui.EnableScreenClicker(true)
 end
 
 function ThiefShop:Init()
-	if not ValidEntity(self.BG) then
+	--[[if not ValidEntity(self.BG) then
 	
 	RunConsoleCommand("UpdateItems")
 	
@@ -131,7 +136,8 @@ function ThiefShop:Init()
 	self.BottomList:SetSize(800-8,(600-31)/2-10)
 	self.BottomList:EnableHorizontal(true)
 	
-	end
+	end]]
+	if self.BG then self.BG:OldClose() end
 	gui.EnableScreenClicker(true)
 end
 

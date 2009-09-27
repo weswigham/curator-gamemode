@@ -2,6 +2,9 @@ local color_grey = Color(0,0,0,150)
 
 local InvPanel = {}
 function InvPanel:PerformLayout()
+	for k,v in pairs({"Slot1","Slot2","Slot3","Slot4"}) do
+		if ValidEntity(self[v]) then self[v]:Remove() end
+	end
 	if !ValidEntity(self["Slot1"]) then
 		if LocalPlayer().MyItems then
 			for k,v in ipairs(LocalPlayer().MyItems) do

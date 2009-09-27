@@ -38,6 +38,9 @@ function Family.MakeStandardSpawnFunc(class)
 		ent:Spawn()
         AccessorFunc(ent,"t_pOwner","Player")
         ent:SetPlayer(ply)
+		if item:GetTexture() ~= nil and item:GetTexture() ~= "" then
+			ent:SetMaterial(item:GetTexture())
+		end
 	end
 	return func
 end

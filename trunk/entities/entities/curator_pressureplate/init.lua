@@ -12,6 +12,7 @@ function ENT:Initialize()
 	if phys and phys:IsValid() then
 		phys:EnableMotion(false)
 	end
+	self.Num = 10
 	
 	self:TemporarilyDisable()
 end
@@ -26,7 +27,11 @@ end
  
 function ENT:Touch(ent)
 	if (self.Active and ent:IsValid() and ent:IsPlayer() and ent ~= GAMEMODE.Curator) then
-		ent:SetNWInt("Detection",math.Clamp(ent:GetNWInt("Detection")+100,0,1000))
+		self.Num = self.Num + 1
+		if self.Num >= 10 then
+			ent:SetNWInt("Detection",math.Clamp(ent:GetNWInt("Detection")+100,0,1000))
+			self.Num = 0
+		end
 	end
 end 
 

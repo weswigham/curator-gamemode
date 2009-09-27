@@ -25,11 +25,13 @@ function GM:Initialize()
 end
 
 local function CurInitPostEntity()
+	timer.Simple(10,function()
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do
 		local ent = ents.Create("thief_shop")
 		ent:SetPos(v:GetPos())
 		ent:Spawn()
 	end
+	end)
 end
 hook.Add("InitPostEntity","CuratorInitPostEntity",CurInitPostEntity)
 
@@ -38,12 +40,27 @@ local function KeyPressed(ply, code)
 		local tr = util.QuickTrace(ply:GetShootPos(),ply:GetAimVector()*200,ply)
 		if tr.Hit and (not tr.HitSkybox) then
 			for k,v in ipairs(ents.FindByClass("trigger_event")) do
-				if v:IsPosInBounds(tr.HitPos) then
+				if v:IsPosInBounds(tr.HitPos) and not v.UsedAlready then
 					if ply:HasItems(v.ReqItems) then
-						v:Input("ValidActivate")
+						for kz,vz in ipairs(ents.FindByName(v.RelayName)) do
+							vz:Input("FireUser1",GetWorldEntity(),GetWorldEntity())
+						end
+						print("I've Activated the event!")
+						for ka,va in ipairs(v.ReqItems) do
+							for kz,vz in pairs(ply:GetItems()) do
+								if string.lower(vz.Item:GetName()) == string.lower(va) then
+									if vz.Entity then vz.Entity:Remove() end
+									table.remove(ply.ItemList,kz)
+									break
+								end
+							end
+						end
+						v.UsedAlready = true
 					else
 						ply:ChatPrint("This event requires "..table.concat(v.ReqItems," and ").." to run.")
 					end
+				elseif v:IsPosInBounds(tr.HitPos) and v.UsedAlready then
+					ply:ChatPrint("This event has already been used.")
 				end
 			end
 		end
@@ -188,9 +205,6 @@ function GM:PlayerInitialSpawn( ply )
 	SelectionWeights[ply] = 1
 	ply.ItemList = {}
 
-    umsg.Start("SetupCuratorSpawnMenu", ply)
-    umsg.End()
-
 end
 
 function GM:PlayerDisconnected( ply )
@@ -234,23 +248,8 @@ function GM:Think()
 		self.Curator:SetMoveType(MOVETYPE_NOCLIP)
 		self.Curator:SetNoDraw(true)
 	elseif #player.GetAll() >= 1 then
-		--Wait, what? we have a player and no curator? well that's outright wrong.
-		self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)
-		self.Curator:SetNWBool("Curator",true)
-		self.Curator:KillSilent()
-		self.Curator:StripWeapons()
-		local tbl = ents.FindByClass("info_curator_start")
-		if tbl[1] then
-			self.Curator:SetPos(table.Random(tbl):GetPos())
-		end
-		for k,v in ipairs(player.GetAll()) do 
-			v:KillSilent()
-			v:PrintMessage(HUD_PRINTTALK,"The Curator Has Changed! You will be respawned!")
-		end
-		self.Curator:SetNWInt("money",10000)
-		umsg.Start("SetupCuratorSpawnMenu", self.Curator)
-		umsg.End()
-		self.Curator:SetTeam(TEAM_CURATOR)
+		RoundTimer.CurrentTime = RoundTimer.RoundTime
+		self:RoundBegin()
 	else
 		self.Curator = nil
 	end
@@ -296,7 +295,9 @@ function GM:RoundBegin()
 	self:ResetMap()
 	for k,v in ipairs(player.GetAll()) do
 		v:SetNWBool("Curator",false)
-		self.Curator:SetNWInt("money",0)
+		v:SetNWInt("money",0)
+		v:StripWeapons()
+		v:KillSilent()
 	end
 	self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)
 	SelectionWeights[self.Curator] = 1
@@ -307,12 +308,15 @@ function GM:RoundBegin()
 	if tbl[1] then
 		self.Curator:SetPos(table.Random(tbl):GetPos())
 	end
-
+    umsg.Start("SetupCuratorSpawnMenu", self.Curator)
+    umsg.End()
+	timer.Simple(1,function()
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do
 		local ent = ents.Create("thief_shop")
 		ent:SetPos(v:GetPos())
 		ent:Spawn()
 	end
+	end)
 end
 
 function GM:RoundEnd()
@@ -380,14 +384,14 @@ end)
 
 hook.Add("RoundStarted","CuratorRoundStart",function() 
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do
-		v:Input("RoundStart")
+		v:Input("FireUser1",GetWorldEntity(),GetWorldEntity())
 	end
 	GAMEMODE:RoundBegin()
 end)
 
 hook.Add("GraceTime","CuratorGraceTime", function()
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do
-		v:Input("RoundEnd")
+		v:Input("FireUser2",GetWorldEntity(),GetWorldEntity())
 	end
 	GAMEMODE:RoundEnd()
 end)

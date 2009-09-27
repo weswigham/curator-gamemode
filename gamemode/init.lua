@@ -59,6 +59,7 @@ function GM:ArrestPlayer(ply)
 	ply:SetTeam(TEAM_JAILED)
 	ply:Lock()
 	ply.Arrested = true
+	PrintMessage(HUD_PRINTCHAT,ply:Nick().." has been caught and arrested. He is out of the game for 60 seconds!")
 end
 
 function GM:UnArrestPlayer(ply)
@@ -202,6 +203,20 @@ function GM:TriggerAlarm(sndPos)
 	end
 end
 
+function GM:StealArt(ply,ent,item)
+	if #ply:GetItems() < 5 then
+		ent:Fade(5)
+		ply:Lock()
+		SendUserMessage("StealingProgressBar",ply)
+		timer.Simple(5,function()
+			ply:UnLock()
+			ply:GiveStolenItem(item,ent)
+		end)
+	else
+		ply:ChatPrint("Your inventory is full, so you can't pick up that "..item:GetName().."!")
+	end
+end
+
 function GM:Think()
 	if self.Curator and self.Curator:IsValid() then
 		self.Curator:SetMoveType(MOVETYPE_NOCLIP)
@@ -279,6 +294,12 @@ function GM:RoundBegin()
 	local tbl = ents.FindByClass("info_curator_start")
 	if tbl[1] then
 		self.Curator:SetPos(table.Random(tbl):GetPos())
+	end
+
+	for k,v in ipairs(ents.FindByClass("info_round_info")) do
+		local ent = ents.Create("thief_shop")
+		ent:SetPos(v:GetPos())
+		ent:Spawn()
 	end
 end
 

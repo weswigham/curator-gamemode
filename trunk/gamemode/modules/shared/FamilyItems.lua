@@ -69,7 +69,7 @@ local StdRot = Angle(90,0,0)
 
 Family.AddItem(GetNewItemObject("Virtual Reality Machine", --name
 "It's art. No, really.", --desc
-1000, --cost
+500, --cost
 3, --limit
 10, --Family Hap Val
 1, --Enthusist Hap Val
@@ -81,7 +81,7 @@ Family.MakeStandardArtCheckFunc("Virtual Reality Machine"), --limit check func
 
 Family.AddItem(GetNewItemObject("Interactive Green Screen", --name
 "Okay, this might not really be art...", --desc
-2000, --cost
+1250, --cost
 1, --limit
 14, --Family Hap Val
 0, --Enthusist Hap Val
@@ -93,7 +93,7 @@ Family.MakeStandardArtCheckFunc("Interactive Green Screen"), --limit check func
 
 Family.AddItem(GetNewItemObject("Food Court",
 "It pleases families.", 
-1750, 
+1500, 
 1, 
 12,
 0, 
@@ -105,7 +105,7 @@ Family.MakeStandardArtCheckFunc("Food Court"),
 
 Family.AddItem(GetNewItemObject("Media Arts Exhibit",
 "Exhibit on Video Game art and the media.", 
-750, 
+550, 
 6, 
 4,
 2, 
@@ -117,7 +117,7 @@ Family.MakeStandardArtCheckFunc("Media Arts Exhibit"),
 
 Family.AddItem(GetNewItemObject("Children's Art Exhibit",
 "Exhibit on art made by children.", 
-1250, 
+1000, 
 5, 
 7,
 2, 
@@ -129,7 +129,7 @@ Family.MakeStandardArtCheckFunc("Children's Art Exhibit"),
 
 Family.AddItem(GetNewItemObject("Science Theatre",
 "Video is a widely popular form of art.", 
-2500, 
+1750, 
 1, 
 20,
 8, 
@@ -141,7 +141,7 @@ Family.MakeStandardArtCheckFunc("Science Theatre"),
 
 Family.AddItem(GetNewItemObject("Indoor Playground",
 "Well, the children love it...", 
-3000, 
+2150, 
 1, 
 25,
 2, 

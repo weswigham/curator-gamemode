@@ -172,7 +172,7 @@ end
 local DecayFactor = 1.2
 
 function GM:Payday()
-	self.Curator:SetNWInt("money",self.Curator:GetNWInt("money")+(self.Curator:GetNWInt("happ1")*25+self.Curator:GetNWInt("happ2")*50+self.Curator:GetNWInt("happ3")*90)) -- that makes a max of 2500+5000+9000, or 16500. If you're getting this much, your thieves suck, and you pwn.
+	self.Curator:SetNWInt("money",self.Curator:GetNWInt("money")+(self.Curator:GetNWInt("happ1")*math.random(30,40)+self.Curator:GetNWInt("happ2")*math.random(60,70)+self.Curator:GetNWInt("happ3")*math.random(90,100))) -- that makes a max of 2500+5000+9000, or 16500. If you're getting this much, your thieves suck, and you pwn.
 	for k,v in ipairs(ents.FindByClass("curator_*")) do
 		if v.Item then
 			if v.Item:GetFamilyHappiness() > 0 then

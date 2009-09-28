@@ -391,7 +391,8 @@ hook.Add("OnSpawnMenuClose", "CloseInventory", CloseInventory)
 
 
 function SetupCMenu(msg)
-	 if ValidEntity(CMenu) then CMenu:SetVisible(false) CMenu:Remove() CMenu = nil end
+	if ValidEntity(CMenu) then CMenu:SetVisible(false) CMenu:Remove() CMenu = nil MainP:Remove() MainP = nil end
+	--if ValidEntity(CMenu) then CMenu:SetVisible(false) CMenu:Remove() CMenu = nil end
 	CMenu = vgui.Create("CuratorSpawnM")
 	CMenu:SetSize(134, 152)
 	CMenu:SetPos(5, 5)

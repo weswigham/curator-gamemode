@@ -19,17 +19,17 @@ function InvPanel:PerformLayout()
 end
 
 function InvPanel:UpdateItems()
-	local Open = Inventory:IsVisible()
+	local Open = LocalPlayer().Inventory:IsVisible()
 	RunConsoleCommand("UpdateItems")
-	Inventory:Remove()
-	Inventory = nil
-	Inventory = vgui.Create("InvPanel")
-	Inventory:SetPos(20, ScrH()/2-(133+32))
-	Inventory:SetSize(88, (268+64))
+	LocalPlayer().Inventory:Remove()
+	LocalPlayer().Inventory = nil
+	LocalPlayer().Inventory = vgui.Create("InvPanel")
+	LocalPlayer().Inventory:SetPos(20, ScrH()/2-(133+32))
+	LocalPlayer().Inventory:SetSize(88, (268+64))
 	if Open then
-		Inventory:Open()
+		LocalPlayer().Inventory:Open()
 	else
-		Inventory:Close()
+		LocalPlayer().Inventory:Close()
 	end
 end
 

@@ -20,6 +20,14 @@ for _, file in ipairs( file.Find( "../"..GM.Folder.."/gamemode/modules/client/*.
 	AddCSLuaFile( "modules/client/"..file )
 end
 
+resource.AddFile("materials/CuratorHUD/lock.vmt")
+resource.AddFile("materials/CuratorHUD/family.vmt")
+resource.AddFile("materials/CuratorHUD/fancy.vmt")
+resource.AddFile("materials/CuratorHUD/person.vmt")
+resource.AddFile("materials/CuratorHUD/lock.vtf")
+resource.AddFile("materials/CuratorHUD/family.vtf")
+resource.AddFile("materials/CuratorHUD/fancy.vtf")
+resource.AddFile("materials/CuratorHUD/person.vtf")
 
 function GM:Initialize()
 end
@@ -219,7 +227,7 @@ function GM:TriggerAlarm(sndPos)
 		timer.Simple(15,function() 
 			self.Alarming = false
 			for k,v in ipairs(player.GetAll()) do
-				if v:GetPos():IsInMuseum() then
+				if v:GetPos():IsInMuseum() and v ~= self.Curator then
 					GAMEMODE:ArrestPlayer(v)
 					SendUserMessage("YouBeenArrested",v)
 					timer.Simple(60,function() GAMEMODE:UnArrestPlayer(v) SendUserMessage("YouveBeenReleased",v) end)
@@ -231,7 +239,7 @@ end
 
 function GM:StealArt(ply,ent,item)
 	if #ply:GetItems() < 5 then
-		ent:Fade(5)
+		if ent.Fade then ent:Fade(5) end
 		ply:Lock()
 		SendUserMessage("StealingProgressBar",ply)
 		timer.Simple(5,function()
@@ -316,6 +324,20 @@ function GM:RoundBegin()
 		ent:SetPos(v:GetPos())
 		ent:Spawn()
 	end
+	
+	
+	
+	local JItems = Junk.GetItems()
+	for k,v in ipairs(ents.FindByClass("info_junk_spawn")) do
+		local item = table.Random(JItems)
+		item:OnSpawn(GetWorldEntity(),v:GetPos(),Angle(math.Rand(-180,180),math.Rand(-180,180),math.Rand(-180,180)))
+	end
+	
+	for k,v in ipairs(ents.FindByClass("info_art_spawn")) do
+		local item = table.Random(_G[table.Random{"Family","Fancy","Enthusist"}].GetItems())
+		item:OnSpawn(self.Curator,v:GetPos(),Angle(0,0,0))
+	end
+	
 	end)
 end
 

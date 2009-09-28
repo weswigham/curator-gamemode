@@ -10,23 +10,31 @@ for _, file in ipairs( file.Find( "../gamemodes/"..GM.Folder:gsub( "gamemodes/",
 	include( "modules/shared/"..file )
 end
 
---if not SinglePlayer() then
-	--[[for _, file in ipairs( file.Find( "../lua/"..GM.Folder:gsub( "gamemodes/", "" ).."/gamemode/modules/client/*.lua" ) ) do
-		include( "modules/client/"..file )
-	end
 
-	for _, file in ipairs( file.Find( "../lua/"..GM.Folder:gsub( "gamemodes/", "" ).."/gamemode/modules/shared/*.lua" ) ) do
-		include( "modules/shared/"..file )
-	end	]]
---[[else
-	for _, file in ipairs( file.Find( "../"..GM.Folder.."/gamemode/modules/client/*.lua" ) ) do
-		include( "modules/client/"..file )
-	end
+for _, file in ipairs( file.Find( "../lua/"..GM.Folder:gsub( "gamemodes/", "" ).."/gamemode/modules/client/*.lua" ) ) do
+	include( "modules/client/"..file )
+end
 
-	for _, file in ipairs( file.Find( "../"..GM.Folder.."/gamemode/modules/shared/*.lua" ) ) do
-		include( "modules/shared/"..file )
-	end	
-end]]
+for _, file in ipairs( file.Find( "../lua/"..GM.Folder:gsub( "gamemodes/", "" ).."/gamemode/modules/shared/*.lua" ) ) do
+	include( "modules/shared/"..file )
+end	
+
+for _, file in ipairs( file.Find( "../"..GM.Folder.."/gamemode/modules/client/*.lua" ) ) do
+	include( "modules/client/"..file )
+end
+
+for _, file in ipairs( file.Find( "../"..GM.Folder.."/gamemode/modules/shared/*.lua" ) ) do
+	include( "modules/shared/"..file )
+end
+
+for _, file in ipairs( file.Find( "../lua_temp/curator/gamemode/modules/client/*.lua")) do
+	include( "modules/client/"..file )
+end
+
+for _, file in ipairs( file.Find( "../lua_temp/curator/gamemode/modules/shared/*.lua")) do
+	include( "modules/shared/"..file )
+end
+
 
 
 function GM:Initialize()
@@ -58,7 +66,7 @@ local MovingEndPt = Bezier.Point(ScrW(),(ScrH()/10)+offsetConstant)
 local MovingControlPt = Bezier.Point((ScrW()-(ScrW()/5)+offsetConstant),ScrH()/2)
 
 local offsetConstant = 5
-local ThiefItier = ScrH()/5
+local ThiefItier = (ScrH()/5)+50
 local ThiefHealthStart = Bezier.Point(ScrW()/5,ScrH())
 local ThiefHealthEnd = Bezier.Point(0,ScrH()-(ScrH()/5))
 local ThiefHealthControl = Bezier.Point(0,ScrH())
@@ -117,7 +125,7 @@ function GM:HUDPaint()
 	--Curator Stuff
 	
 		--Happiness Bar 1 BG
-		local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,60,3,ThiefItier,ThiefItier,ThiefHealthStart,ThiefHealthControl,ThiefHealthEnd)
+		local stufftodraw = Bezier.TableOfPointsOnQuadraticCurve(BGCol,60,4,ThiefItier,ThiefItier,ThiefHealthStart,ThiefHealthControl,ThiefHealthEnd)
 		for k,v in pairs(stufftodraw) do
 			draw.TexturedQuad(v)
 		end
@@ -318,8 +326,10 @@ usermessage.Hook("StealingProgressBar",function(um)
 	end)
 	timer.Simple(5,function() 
 		hook.Remove("HUDPaint","Stealing")
-		LocalPlayer().Inventory:UpdateItems()
-		LocalPlayer().Inventory:Close()
+		if LocalPlayer().Inventory then
+			LocalPlayer().Inventory:UpdateItems()
+			LocalPlayer().Inventory:Close()
+		end
 	end)
 end)
 
@@ -331,7 +341,7 @@ usermessage.Hook("OpenThiefBuyMenu",function(um)
 	end
 end)
 
-local function KeyPressed(ply, code)
+local function KeyRelease(ply, code)
 	if ply:GetNWBool("Curator") and code == IN_SPEED then
 		if not ply.Enabled then ply.Enabled = false end
 		ply.Enabled = !ply.Enabled
@@ -343,7 +353,7 @@ local function KeyPressed(ply, code)
 		gui.EnableScreenClicker(ply.Enabled)
 	end
 end
-hook.Add("KeyPress","CuratorKeyPressed",KeyPressed)
+hook.Add("KeyRelease","CuratorKeyPressed",KeyRelease)
 
 
 local AllowedElements = { 	"CHudChat",
@@ -486,7 +496,8 @@ concommand.Add("OpenEndGameWindow", function()
 		for i=1,MaxNumPlayersShown do
 			if thieves[i] and i ~= MaxNumPlayersShown then
 				local dat = thieves[i]
-				draw.SimpleText(dat:Nick(),tIDFont,24,100+((fnth+4)*i),team.GetColor(dat:GetTeam()),TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText(dat:Nick(),tIDFont,24,100+((fnth+4)*i),team.GetColor(dat:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText("$"..dat:GetNWInt("money"),tIDFont,ScrW()-44,100+((fnth+4)*i),team.GetColor(dat:Team()),TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 			elseif i == MaxNumPlayersShown then
 				local Text = "Total Cash: $"..ThiefCash
 				local ox,oy = surface.GetTextSize(Text)

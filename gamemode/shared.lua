@@ -41,6 +41,7 @@ end
 
 function Player:GiveStolenItem(item,entToRemoveOnSell)
 	table.insert(self.ItemList,{Item=item,Entity=entToRemoveOnSell})
+	self:SendItems()
 end
 
 function Player:SellItem(index)
@@ -91,7 +92,7 @@ usermessage.Hook("RecieveItems",function(um)
 	local index = um:ReadLong()
 	local item = um:ReadString()
 	if item ~= "Empty" then
-		for k,v in ipairs({"Family","Fancy","Enthusist","Thief","Security"}) do
+		for k,v in ipairs({"Family","Fancy","Enthusist","Thief","Security","Junk"}) do
 			if _G[v].GetItem(item) then item = _G[v].GetItem(item) end
 		end
 	
@@ -105,7 +106,7 @@ usermessage.Hook("RecieveItems",function(um)
 	else
 		LocalPlayer().MyItems = {}
 		if LocalPlayer().BuyMenu and ValidEntity(LocalPlayer().BuyMenu) and ValidEntity(LocalPlayer().BuyMenu.BG) then LocalPlayer().BuyMenu.BG:OldClose() LocalPlayer().BuyMenu:InvalidateLayout() end
-		if Inventory and ValidEntity(Inventory) then Inventory:InvalidateLayout() end
+		if LocalPlayer().Inventory and ValidEntity(LocalPlayer().Inventory) then LocalPlayer().Inventory:InvalidateLayout() end
 	end
 end)
 end

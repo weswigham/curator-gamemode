@@ -51,8 +51,8 @@ local StdRot = Angle(90,0,0)
 
 Security.AddItem(GetNewItemObject("Survailance Camera",
 "Affords Basic Protection against intruders.",
-1000,
-8,
+800,
+10,
 -1,
 0,
 0,

@@ -97,6 +97,12 @@ function GM:ArrestPlayer(ply)
 	ply:Lock()
 	ply.Arrested = true
 	PrintMessage(HUD_PRINTCHAT,ply:Nick().." has been caught and arrested. He is out of the game for 60 seconds!")
+	for k,v in pairs(ply.ItemList) do
+		if v.Entity and v.Entity:IsValid() then v.Entity:StopFade() end
+	end
+	ply.ItemList = {}
+	ply:SendItems()
+	ply:SetNWInt("money",math.floor(math.Clamp(ply:GetNWInt("money")*0.9,0,9999999)))
 end
 
 function GM:UnArrestPlayer(ply)
@@ -263,7 +269,7 @@ function GM:Think()
 	end
 	for k,v in ipairs(player.GetAll()) do
 		v:SetNWBool("Curator",v == self.Curator)
-		if v:GetNWInt("Detection") >= 1000 then
+		if v ~= self.Curator and v:Team() == TEAM_THIEF and v:GetNWInt("Detection") >= 1000 then
 			self:TriggerAlarm(v:GetPos())
 		end
 		if not v:GetPos():IsInMuseum() then
@@ -306,11 +312,13 @@ function GM:RoundBegin()
 		v:SetNWInt("money",0)
 		v:StripWeapons()
 		v:KillSilent()
+		v:SetTeam(TEAM_THIEF)
 	end
 	self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)
 	SelectionWeights[self.Curator] = 1
 	self.Curator:SetNWBool("Curator",true)
 	self.Curator:SetNWInt("money",10000)
+	self.Curator:SetTeam(TEAM_CURATOR)
 	
 	local tbl = ents.FindByClass("info_curator_start")
 	if tbl[1] then
@@ -348,7 +356,13 @@ function GM:RoundEnd()
 		SelectionWeights[v] = SelectionWeights[v] + 1
 		v:SetNWBool("Curator",false)
 		v:KillSilent()
+		for kz,vz in pairs(v.ItemList) do
+			if vz.Entity and vz.Entity:IsValid() then vz.Entity:StopFade() end
+		end
+		v.ItemList = {}
+		v:SendItems()
 	end
+	
 	timer.Simple(RoundTimer.GraceTime,function()
 		for k,v in ipairs(player.GetAll()) do
 			v:UnLock()
@@ -365,6 +379,8 @@ local function FixStrings(...)
 	return unpack(tbl)
 end
 
+local Down = Vector(0,0,-200)
+
 concommand.Add("curator_spawn_object",function(ply,cmd,args)
     local AType = args[1]
     local name = args[2]
@@ -375,8 +391,13 @@ concommand.Add("curator_spawn_object",function(ply,cmd,args)
     if ply == GAMEMODE.Curator and ply:GetNWInt("money") >= item:GetPrice() then
 		if item:LimitCheck() < item:GetLimit() then
 			if pos:IsInMuseum() then
-				ply:SetNWInt("money",ply:GetNWInt("money") - item:GetPrice())
-				item:OnSpawn(ply,pos,ang)
+				local tr = util.QuickTrace(pos,Down)
+				if (tr.Hit and tr.HitWorld) or AType == "Security" then
+					ply:SetNWInt("money",ply:GetNWInt("money") - item:GetPrice())
+					item:OnSpawn(ply,pos,ang)
+				else
+					ply:ChatPrint("You can't spawn that "..item:GetName().." so high off the ground! Now that would just be unsporting!")
+				end
 			else
 				ply:ChatPrint("You can't spawn that "..item:GetName().." outside the museum!")
 			end

@@ -12,7 +12,9 @@ function ENT:Draw()
 	self.Entity:DrawModel()
 	if self:GetNWBool("Active") then
 		render.SetMaterial(bMat)
-		local tr = util.QuickTrace(self:GetPos(),self:GetAngles():Up()*700,table.insert(player.GetAll(),self))
+		local tr = util.QuickTrace(self:GetPos(),self:GetAngles():Up()*1000,self,MASK_SOLID_BRUSHONLY)
+		self:SetRenderBoundsWS(self:GetPos(),tr.HitPos)
 		render.DrawBeam( self:GetPos(), tr.HitPos, 5, 0, 0, Red )
+		debugoverlay.Line( self:GetPos(), tr.HitPos)
 	end
 end 

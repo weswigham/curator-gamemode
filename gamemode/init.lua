@@ -81,7 +81,7 @@ function GM:PhysgunPickup(ply, ent)
 end
 
 function GM:PlayerNoClip( ply ) 
-	return ply.Curator or false
+	return false
 end
 
 function GM:PlayerDeath(ply,inf,killr)
@@ -167,7 +167,7 @@ function GM:PlayerLoadout( ply )
 end
 
 function GM:PlayerShouldTakeDamage( ply, attacker )
-	return not ply:GetNWBool("Curator")
+	return (not ply:GetNWBool("Curator")) or not (attacker:IsPlayer() and attacker ~= self.Curator)
 end
 
 function GM:ShowHelp( ply )
@@ -179,6 +179,7 @@ local DecayFactor = 1.2
 
 function GM:Payday()
 	self.Curator:SetNWInt("money",self.Curator:GetNWInt("money")+(self.Curator:GetNWInt("happ1")*math.random(30,40)+self.Curator:GetNWInt("happ2")*math.random(60,70)+self.Curator:GetNWInt("happ3")*math.random(90,100))) -- that makes a max of 2500+5000+9000, or 16500. If you're getting this much, your thieves suck, and you pwn.
+	local liquid = 0
 	for k,v in ipairs(ents.FindByClass("curator_*")) do
 		if v.Item then
 			if v.Item:GetFamilyHappiness() > 0 then
@@ -196,8 +197,12 @@ function GM:Payday()
 			elseif v.Item:GetCollectorHappiness() < 0 then
 				v.Item:SetCollectorHappiness(math.Clamp(v.Item:GetCollectorHappiness()/DecayFactor,-100,-0.25))
 			end
+			if not Security.GetItem(v.Item:GetName()) then
+				liquid = liquid + v.Item:GetPrice()*0.5
+			end
 		end
 	end
+	self.Curator:SetNWInt("liquid",liquid)
 end
 
 function GM:ShowTeam(ply)
@@ -230,7 +235,7 @@ function GM:TriggerAlarm(sndPos)
 		self.Alarming = true
 		WorldSound("Trainyard.distantsiren",sndPos,165,100)
 		SendUserMessage("StartAlarmCountdown")
-		timer.Simple(15,function() 
+		timer.Simple(10,function() 
 			self.Alarming = false
 			for k,v in ipairs(player.GetAll()) do
 				if v:GetPos():IsInMuseum() and v ~= self.Curator then
@@ -245,10 +250,10 @@ end
 
 function GM:StealArt(ply,ent,item)
 	if #ply:GetItems() < 5 then
-		if ent.Fade then ent:Fade(5) end
+		if ent.Fade then ent:Fade(3) end
 		ply:Lock()
 		SendUserMessage("StealingProgressBar",ply)
-		timer.Simple(5,function()
+		timer.Simple(3,function()
 			ply:UnLock()
 			ply:GiveStolenItem(item,ent)
 		end)
@@ -278,16 +283,21 @@ function GM:Think()
 	end
 	if self.Curator then
 		local val1,val2,val3 = 0,0,0
+		local liquid = 0
 		for k,v in ipairs(ents.FindByClass("curator_*")) do
 			if v.Item then
 				val1 = val1 + v.Item:GetFamilyHappiness()
 				val2 = val2 + v.Item:GetEnthusistHappiness()
 				val3 = val3 + v.Item:GetCollectorHappiness()
+				if not Security.GetItem(v.Item:GetName()) then
+					liquid = liquid + v.Item:GetPrice()*0.5
+				end
 			end
 		end
 		self.Curator:SetNWInt("happ1", math.Clamp(val1,0,100)) 
 		self.Curator:SetNWInt("happ2", math.Clamp(val2,0,100)) 
 		self.Curator:SetNWInt("happ3", math.Clamp(val3,0,100))
+		self.Curator:SetNWInt("liquid",liquid)
 	end
 end 
 
@@ -348,6 +358,13 @@ function GM:RoundBegin()
 	
 	end)
 end
+
+local function FadingSholdCollide(e1,e2)
+	if (e1:IsPlayer() or e2:IsPlayer()) and (e1.Fading or e2.Fading) then
+		return false
+	end
+end
+hook.Add("SholdCollide","CuratorFadingSholdCollide",FadingSholdCollide)
 
 function GM:RoundEnd()
 	for k,v in ipairs(player.GetAll()) do

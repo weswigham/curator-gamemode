@@ -231,7 +231,7 @@ end
 
 usermessage.Hook("StartAlarmCountdown",function(um)
 	local AlarmTimestamp = RoundTimer.GetCurrentTime()
-	local EndTime = AlarmTimestamp - 15
+	local EndTime = AlarmTimestamp - 10
 	hook.Add("HUDPaint","AlarmWarning",function()
 		local Time = string.ToMinutesSeconds(math.Clamp(RoundTimer.GetCurrentTime()-EndTime,0,120))
 		surface.SetFont(Font)
@@ -247,7 +247,7 @@ usermessage.Hook("StartAlarmCountdown",function(um)
 		draw.SimpleText(Text,Font,(ScrW()/2)-(ox/2),ScrH()-(offy+5)-oy-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
 		draw.SimpleText(Text2,Font,(ScrW()/2)-(ox2/2),ScrH()-(offy+5)-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
 	end)
-	timer.Simple(15,function() 
+	timer.Simple(10,function() 
 		hook.Remove("HUDPaint","AlarmWarning")
 	end)
 end)
@@ -293,7 +293,7 @@ end)
 
 usermessage.Hook("StealingProgressBar",function(um)
 	local StartTheft = CurTime()
-	local Duration = 5
+	local Duration = 3
 	hook.Add("HUDPaint","Stealing",function()
 		local frac = (CurTime()-StartTheft)/Duration
 		local tIDFont = "TargetID"
@@ -324,7 +324,7 @@ usermessage.Hook("StealingProgressBar",function(um)
 		
 		draw.SimpleText(Text,tIDFont,(ScrW()/2),15,WhiteCol,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end)
-	timer.Simple(5,function() 
+	timer.Simple(3,function() 
 		hook.Remove("HUDPaint","Stealing")
 		if LocalPlayer().Inventory then
 			LocalPlayer().Inventory:UpdateItems()
@@ -454,7 +454,7 @@ concommand.Add("OpenEndGameWindow", function()
 	local Winner = ""
 	for k,v in ipairs(player.GetAll()) do
 		if v:GetNWBool("Curator") then
-			CurCash = v:GetNWInt("money")
+			CurCash = v:GetNWInt("money") + v:GetNWInt("liquid")
 		else
 			ThiefCash = ThiefCash + v:GetNWInt("money")
 		end

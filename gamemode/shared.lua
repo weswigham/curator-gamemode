@@ -46,7 +46,7 @@ end
 
 function Player:SellItem(index)
 	if not self.ItemList[tonumber(index)] then self:ChatPrint("Wait, you don't have anything in that item slot...Hmmm") return end
-	self:SetNWInt("money",math.ceil(self:GetNWInt("money")+self.ItemList[tonumber(index)].Item:GetPrice()))
+	self:SetNWInt("money",math.ceil(self:GetNWInt("money")+math.floor(self.ItemList[tonumber(index)].Item:GetPrice()*2)))
 	if self.ItemList[tonumber(index)].Entity then self.ItemList[tonumber(index)].Entity:Remove() end 
 	table.remove(self.ItemList,tonumber(index))
 end
@@ -161,3 +161,15 @@ team.SetUp(3,"Dead",Color(175,175,175,255))
 TEAM_DEAD = 3
 team.SetUp(4,"Arrested",Color(100,100,200,255))
 TEAM_JAILED = 4
+
+
+function util.QuickTraceHull(pos,add,minz,maxz,filter,mask)
+	local tbl = {}
+	tbl.start = pos
+	tbl.endpos = add
+	tbl.mins = minz
+	tbl.maxs = maxz
+	tbl.filter = filter
+	tbl.mask = mask
+	return util.TraceHull(tbl)
+end 

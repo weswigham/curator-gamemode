@@ -17,15 +17,18 @@ function ENT:Initialize()
 	
 end
 
+local minz = Vector(-2,-2,-2)
+local maxz = Vector(2,2,2)
+
 function ENT:Think()
 	if self.Active then
-		local tr = util.QuickTrace(self:GetPos(),self:GetAngles():Up()*700,{self})
+		local tr = util.QuickTraceHull(self:GetPos(),self:GetAngles():Up()*1000,minz,maxz,{self})
 		if tr.Entity and tr.Entity:IsValid() and tr.Entity:IsPlayer() and tr.Entity ~= GAMEMODE.Curator then
-			tr.Entity:TakeDamage(1,GAMEMODE.Curator,self)
-			tr.Entity:SetNWInt("Detection",math.Clamp(tr.Entity:GetNWInt("Detection")+10,0,1000))
+			tr.Entity:TakeDamage(5,GAMEMODE.Curator,self)
+			tr.Entity:SetNWInt("Detection",math.Clamp(tr.Entity:GetNWInt("Detection")+200,0,1000))
 		end
 	end
-	self:NextThink(CurTime() + 0.25)
+	self:NextThink(CurTime() + 0.1)
 	return true
 end
 
@@ -43,6 +46,10 @@ function ENT:DeActivate()
 	self.Active = false
 	self:SetNWBool("Active",false)
 end 
+
+function ENT:UpdateTransmitState()
+	return TRANSMIT_ALWAYS
+end
 
 function ENT:TemporarilyDisable()
 	self:DeActivate()

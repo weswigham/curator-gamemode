@@ -83,19 +83,19 @@ Security.AddItem(GetNewItemObject("Laser Emitter",
 Security.MakeStandardSpawnFunc("curator_laser"),
 nil,
 Security.MakeStandardLimitCheckFunc("curator_laser"),
-"models/props_combine/combine_mine01.mdl"):SetAngularOffset(StdRot))
+"models/props_combine/combine_mine01.mdl"):SetAngularOffset(StdRot):SetPosOffset(0))
 
 Security.AddItem(GetNewItemObject("Laser Grid",
-"Still Being Coded.",
+"A large grid of lasers!",
 2500,
-0,
+2,
 0,
 0,
 0,
 Security.MakeStandardSpawnFunc("curator_laser_grid"),
 nil,
 Security.MakeStandardLimitCheckFunc("curator_laser_grid"),
-"models/props_combine/combine_mine01.mdl"):SetAngularOffset(StdRot))
+"models/props_combine/combine_fence01a.mdl"):SetPosOffset(0))
 
 Security.AddItem(GetNewItemObject("Turret",
 "Still Being Coded.",

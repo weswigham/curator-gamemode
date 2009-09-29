@@ -26,7 +26,7 @@ function ENT:OnRemove()
 end
 
 function ENT:Use(ply,callr)
-	if ply ~= GAMEMODE.Curator then
+	if ply ~= GAMEMODE.Curator and ply:Alive() then
 		SendUserMessage("OpenThiefBuyMenu",ply)
 	end
 end 

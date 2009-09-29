@@ -26,7 +26,6 @@ function ENT:Think()
 			--if v ~= GAMEMODE.Curator and self:Visible(v) and self:GetPos():Distance(v:GetPos()) <= 2000 then
 			if v:IsPlayer() and v ~= GAMEMODE.Curator and self:Visible(v) then
 				v:SetNWInt("Detection",math.Clamp(v:GetNWInt("Detection")+25,0,1000))
-				print(v:Nick())
 				debugoverlay.Cross(self:GetPos(),50,1,red)
 				debugoverlay.Line(self:GetPos(),v:GetPos(),1,red)
 				debugoverlay.Cross(v:GetPos(),50,1,red)

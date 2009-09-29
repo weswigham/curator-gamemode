@@ -10,5 +10,9 @@ function ENT:KeyValue(k,v)
 		self.ReqItems = string.Explode(";",string.gsub(string.lower(v)," ",""))
 	elseif k == "TargetRelay" then
 		self.RelayName = v
+	elseif k == "CuratorRelay" then
+		self.CurRelayName = v
+	elseif k == "CuratorCost" then
+		self.CurRelayCost = v
 	end
 end 

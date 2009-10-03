@@ -23,17 +23,18 @@ function ENT:Think()
 		local numtra = 6
 		local dist = self:BoundingRadius()*2
 		local DistInc = dist/numtra
+		local addr = (self:GetAngles():Right()*(self:OBBMins()/numtra):Distance(self:OBBMaxs()/numtra))
 		for i=math.floor(numtra/-2)+2,math.floor(numtra/2)+2 do
-			local start = self:GetPos()+(self:GetAngles():Up()*i*DistInc)
-			tr[i] = util.QuickTraceHull(start,self:GetAngles():Right()*1000,self:OBBMins()/numtra,self:OBBMaxs()/numtra,{self}) --convoluted shit here. All for the sake of resolution.
+			local start = self:GetPos()+(self:GetAngles():Up()*i*DistInc)+addr
+			tr[i] = util.QuickTraceHull(start,self:GetAngles():Right()*1000,self:OBBMins()/numtra,self:OBBMaxs()/numtra,self) --convoluted shit here. All for the sake of resolution.
 			if tr[i].Entity and tr[i].Entity:IsValid() and tr[i].Entity:IsPlayer() and tr[i].Entity ~= GAMEMODE.Curator then
-				tr[i].Entity:TakeDamage(10,GAMEMODE.Curator,self)
-				tr[i].Entity:SetNWInt("Detection",math.Clamp(tr[i].Entity:GetNWInt("Detection")+150,0,1000))
+				tr[i].Entity:TakeDamage(3,GAMEMODE.Curator,self)
+				tr[i].Entity:SetNWInt("Detection",math.Clamp(tr[i].Entity:GetNWInt("Detection")+100,0,1000))
 				debugoverlay.Line( self:GetPos(), tr[i].HitPos)
 			end
 		end
 	end
-	self:NextThink(CurTime() + 0.1)
+	self:NextThink(CurTime() + 0.2)
 	return true
 end
 

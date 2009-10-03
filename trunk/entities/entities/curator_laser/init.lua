@@ -22,10 +22,10 @@ local maxz = Vector(2,2,2)
 
 function ENT:Think()
 	if self.Active then
-		local tr = util.QuickTraceHull(self:GetPos(),self:GetAngles():Up()*1000,minz,maxz,{self})
+		local tr = util.QuickTraceHull(self:GetPos()+(self:GetAngles():Up()*4),self:GetAngles():Up()*1000,minz,maxz,self)
 		if tr.Entity and tr.Entity:IsValid() and tr.Entity:IsPlayer() and tr.Entity ~= GAMEMODE.Curator then
 			tr.Entity:TakeDamage(5,GAMEMODE.Curator,self)
-			tr.Entity:SetNWInt("Detection",math.Clamp(tr.Entity:GetNWInt("Detection")+200,0,1000))
+			tr.Entity:SetNWInt("Detection",math.Clamp(tr.Entity:GetNWInt("Detection")+100,0,1000))
 		end
 	end
 	self:NextThink(CurTime() + 0.1)

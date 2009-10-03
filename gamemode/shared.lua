@@ -136,6 +136,7 @@ function ents.FindInConeFix(p1,p2,Radius)
 	end
 	return tbl
 end
+local red = Color(255,0,0,255)
 
 function player.FindInCone(p1,p2,Radius)
 	local tbl = {}
@@ -147,8 +148,15 @@ function player.FindInCone(p1,p2,Radius)
 		v2:Normalize()
 		if v1:Dot(v2) >= (math.atan2(Radius,dist)*2) then
 			table.insert(tbl,v)
+				debugoverlay.Cross(p1,50,1,red)
+				debugoverlay.Line(p1,v:GetPos(),1,red)
+				debugoverlay.Cross(v:GetPos(),50,1,red)
 		end
 	end
+		debugoverlay.Cross(p1,50)
+		debugoverlay.Line(p1,p2)
+		debugoverlay.Cross(p2,50)
+		debugoverlay.Sphere(p2,Radius)
 	return tbl
 end
 

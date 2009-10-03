@@ -166,7 +166,7 @@ TEAM_JAILED = 4
 function util.QuickTraceHull(pos,add,minz,maxz,filter,mask)
 	local tbl = {}
 	tbl.start = pos
-	tbl.endpos = add
+	tbl.endpos = pos+add
 	tbl.mins = minz
 	tbl.maxs = maxz
 	tbl.filter = filter

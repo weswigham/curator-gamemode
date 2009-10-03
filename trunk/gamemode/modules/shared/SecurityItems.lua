@@ -95,7 +95,7 @@ Security.AddItem(GetNewItemObject("Laser Grid",
 Security.MakeStandardSpawnFunc("curator_laser_grid"),
 nil,
 Security.MakeStandardLimitCheckFunc("curator_laser_grid"),
-"models/props_combine/combine_fence01a.mdl"):SetPosOffset(0))
+"models/props_combine/combine_fence01a.mdl"):SetPosOffset(0):SetAngularOffset(Angle(0,90,0)))
 
 Security.AddItem(GetNewItemObject("Turret",
 "Still Being Coded.",

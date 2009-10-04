@@ -46,9 +46,17 @@ end
 
 function Player:SellItem(index)
 	if not self.ItemList[tonumber(index)] then self:ChatPrint("Wait, you don't have anything in that item slot...It's a DList Glitch, just ignore it.") return end
-	self:SetNWInt("money",math.ceil(self:GetNWInt("money")+math.floor(self.ItemList[tonumber(index)].Item:GetPrice()*2)))
+	
+	if Thief.GetItem(self.ItemList[tonumber(index)].Item:GetName()) then -- we don't know people glitching money, now do we?
+		self:SetNWInt("money",math.ceil(self:GetNWInt("money")+math.floor(self.ItemList[tonumber(index)].Item:GetPrice())))
+	else
+		self:SetNWInt("money",math.ceil(self:GetNWInt("money")+math.floor(self.ItemList[tonumber(index)].Item:GetPrice()*2)))
+	end
+	
 	if self.ItemList[tonumber(index)].Entity then self.ItemList[tonumber(index)].Entity:Remove() end 
-	if self.ItemList[tonumber(index)].OnRemove then self.ItemList[tonumber(index)]:OnRemove(self) end
+	
+	if self.ItemList[tonumber(index)].Item:GetOnRemoveFunc() then self.ItemList[tonumber(index)].Item:OnRemove(self) end
+	
 	table.remove(self.ItemList,tonumber(index))
 end
 
@@ -74,7 +82,8 @@ function Player:BuyItem(name)
 			else
 				self:SetNWInt("money",self:GetNWInt("money")-item:GetPrice())
 				table.insert(self.ItemList,{Item=item})
-				if item.OnSpawn then item:OnSpawn(self) end
+				self:ChatPrint("You've sucessfully bought a "..item:GetName().."!")
+				if item:GetOnSpawnFunc() then item:OnSpawn(self) end
 			end
 		else
 			self:ChatPrint("You don't have enought cash to buy "..name..".")

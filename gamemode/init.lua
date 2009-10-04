@@ -440,6 +440,7 @@ end)
 
 concommand.Add("BuyItem", function(ply,cmd,arg)
 	ply:BuyItem(arg[1])
+	print("Buying",arg[1])
 	ply:SendItems()
 end)
 

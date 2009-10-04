@@ -156,7 +156,9 @@ function GM:PlayerLoadout( ply )
 	ply:RemoveAllAmmo()
 	
 	if (not ply:GetNWBool("Curator")) and ply ~= self.Curator then
-		ply:Give("weapon_crowbar")
+		for k,v in pairs(ply.ItemList) do
+			if v.OnSpawn then v:OnSpawn(ply) end
+		end
 	end
 
 	local cl_defaultweapon = ply:GetInfo( "cl_defaultweapon" )

@@ -1,8 +1,8 @@
 
 SWEP.Author			= "Levybreak"
 SWEP.Contact		= "Facepunch"
-SWEP.Purpose		= "Grapple with it."
-SWEP.Instructions	= "To climb up the walls of building at specified points."
+SWEP.Purpose		= "EMP! Pronounced 'EMP' not 'E-EM-PEE'"
+SWEP.Instructions	= "Temporarily Disables all electronic devices in a 30 ft radius. (5 seconds) Single use only."
 
 SWEP.Spawnable			= false
 SWEP.AdminSpawnable		= false

@@ -48,6 +48,7 @@ function Player:SellItem(index)
 	if not self.ItemList[tonumber(index)] then self:ChatPrint("Wait, you don't have anything in that item slot...Hmmm") return end
 	self:SetNWInt("money",math.ceil(self:GetNWInt("money")+math.floor(self.ItemList[tonumber(index)].Item:GetPrice()*2)))
 	if self.ItemList[tonumber(index)].Entity then self.ItemList[tonumber(index)].Entity:Remove() end 
+	if self.ItemList[tonumber(index)].OnRemove then self.ItemList[tonumber(index)]:OnRemove(ply) end
 	table.remove(self.ItemList,tonumber(index))
 end
 
@@ -73,6 +74,7 @@ function Player:BuyItem(name)
 			else
 				self:SetNWInt("money",self:GetNWInt("money")-item:GetPrice())
 				table.insert(self.ItemList,{Item=item})
+				if item.OnSpawn then item:OnSpawn(ply) end
 			end
 		else
 			self:ChatPrint("You don't have enought cash to buy "..name..".")

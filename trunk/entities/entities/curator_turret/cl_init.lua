@@ -29,17 +29,37 @@ function ENT:Think()
 			local atm = self:LookupAttachment("eyes")
 			local tbl = self:GetAttachment(atm)
 			local ply = player.GetByID(self:GetNWInt("FiringAt"))
-			self.Entity:SetPoseParameter( "aim_yaw", ((ply:GetShootPos()-tbl.Pos):Angle()).y )
-			self.Entity:SetPoseParameter( "aim_pitch", ((ply:GetShootPos()-tbl.Pos):Angle()).p )
+			local possibleAng = (ply:GetShootPos()-tbl.Pos):Angle()+self:GetAngles()
+			
+			debugoverlay.Line(tbl.Pos,tbl.Pos+(possibleAng:Forward()*20))
+			debugoverlay.Cross(tbl.Pos+(possibleAng:Forward()*20),10)
+			
+			self.Entity:SetPoseParameter( "aim_yaw", math.wrap(possibleAng.y,-60,60) )
+			self.Entity:SetPoseParameter( "aim_pitch", math.wrap(possibleAng.p,-15,15) )
 			local fire = self:LookupSequence("fire")
 			self:SetSequence(fire)
 		else
 			local idle = self:LookupSequence("idle")
 			self:ResetSequence(idle)
-			self.Entity:SetPoseParameter( "aim_yaw", math.sin( CurTime() ) * 60 )
+			
+			local degr = math.Rad2Deg(math.atan2(500,950))
+			
+			self.Entity:SetPoseParameter( "aim_yaw", math.sin( CurTime() ) * degr )
 			self.Entity:SetPoseParameter( "aim_pitch", 0 )
 		end
 	end
 	self:NextThink(CurTime())
 	return true
+end 
+
+function math.wrap(number,mins,maxs)
+	if number > maxs or number < mins then
+		if number > maxs then
+			return math.wrap(mins+(number-maxs),mins,maxs)
+		elseif number < mins then
+			return math.wrap(maxs+(number-mins),mins,maxs)
+		end
+	else
+		return number
+	end
 end 

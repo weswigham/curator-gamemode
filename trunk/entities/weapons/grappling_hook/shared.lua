@@ -55,8 +55,6 @@ function SWEP:PrimaryAttack()
 		
 		GAMEMODE:SetPlayerAnimation( self.Owner, PLAYER_ATTACK1 )
 	
-	end
-	
 	
 
 end

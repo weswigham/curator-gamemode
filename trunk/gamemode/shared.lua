@@ -45,7 +45,7 @@ function Player:GiveStolenItem(item,entToRemoveOnSell)
 end
 
 function Player:SellItem(index)
-	if not self.ItemList[tonumber(index)] then self:ChatPrint("Wait, you don't have anything in that item slot...Hmmm") return end
+	if not self.ItemList[tonumber(index)] then self:ChatPrint("Wait, you don't have anything in that item slot...It's a DList Glitch, just ignore it.") return end
 	self:SetNWInt("money",math.ceil(self:GetNWInt("money")+math.floor(self.ItemList[tonumber(index)].Item:GetPrice()*2)))
 	if self.ItemList[tonumber(index)].Entity then self.ItemList[tonumber(index)].Entity:Remove() end 
 	if self.ItemList[tonumber(index)].OnRemove then self.ItemList[tonumber(index)]:OnRemove(self) end

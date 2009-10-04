@@ -28,16 +28,16 @@ end
 
 local zeroAng = Angle(0,0,0)
 
-function Thief.MakeStandardSpawnFunc(class)
-	local func = function(item,ply,pos,ang) 
-		local ent = ents.Create(class)
-		ent:SetPos(pos)
-		ent:SetAngles(ang)
-		ent.Item = item:CopyTo(GetNewItemObject())
-		ent:SetModel(item:GetModel())
-		ent:Spawn()
-        AccessorFunc(ent,"t_pOwner","Player")
-        ent:SetPlayer(ply)
+function Thief.MakeWeaponFunc(class)
+	local func = function(item,ply) 
+		ply:Give(class)
+	end
+	return func
+end
+
+function Thief.MakeDestroyFunc(class)
+	local func = function(item,ply) 
+		ply:StripWeapon(class)
 	end
 	return func
 end
@@ -47,19 +47,6 @@ function Thief.MakeStandardLimitCheckFunc(class)
 		return #ents.FindByClass(class)
 	end
 	return func
-end
-
-function Thief.MakeStandardJunkCheckFunc(name)
-    local func = function(item)
-        local i = 0
-        for k,v in ipairs(ents.FindByClass("curator_junk")) do
-            if v.Item:GetName() == name then
-                i = i + 1
-            end
-        end
-        return i
-    end
-    return func
 end
 
 Thief.AddItem(GetNewItemObject("Lockpick",
@@ -72,23 +59,23 @@ Thief.AddItem(GetNewItemObject("Lockpick",
 nil,
 nil, 
 nil, 
-"models/props_c17/Frame002a.mdl"))
+"models/props_c17/FurnitureDrawer001a_Shard01.mdl"))
 
 Thief.AddItem(GetNewItemObject("Crowbar",
 "Beats shit down, maaan.", 
-500, 
+750, 
 -1, 
 0,
 0, 
 0, 
-nil,
+Thief.MakeWeaponFunc("weapon_crowbar"),
+Thief.MakeDestroyFunc("weapon_crowbar"), 
 nil, 
-nil, 
-"models/props_c17/Frame002a.mdl"))
+"models/Weapons/w_crowbar.mdl"))
 
 Thief.AddItem(GetNewItemObject("Rope",
 "Helps ya in.", 
-500, 
+250, 
 -1, 
 0,
 0, 
@@ -100,7 +87,7 @@ nil,
 
 Thief.AddItem(GetNewItemObject("Explosive",
 "Opens large, reinforced locked doors.", 
-1500, 
+1250, 
 -1, 
 0,
 0, 
@@ -108,4 +95,16 @@ Thief.AddItem(GetNewItemObject("Explosive",
 nil,
 nil, 
 nil, 
-"models/props_c17/Frame002a.mdl"))
+"models/Combine_Helicopter/helicopter_bomb01.mdl"))
+
+Thief.AddItem(GetNewItemObject("Pocket EMP",
+"Single Use only EMP. Range = 30ft", 
+1250, 
+-1, 
+0,
+0, 
+0, 
+Thief.MakeWeaponFunc("weapon_emp"),
+Thief.MakeDestroyFunc("weapon_emp"), 
+nil, 
+"models/Weapons/w_bugbait.mdl"))

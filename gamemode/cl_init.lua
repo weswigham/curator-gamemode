@@ -399,7 +399,7 @@ function SetupCMenu(msg)
 end
 usermessage.Hook("SetupCuratorSpawnMenu", SetupCMenu)
 
-local yaw = Angle(0,1,0)
+local yaw = Angle(0,2.5,0)
 local AddAng = Angle(0,0,0)
 
 function GM:Think()

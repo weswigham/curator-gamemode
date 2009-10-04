@@ -61,6 +61,7 @@ function ENT:Think()
 end
 
 function ENT:OnRemove()
+	timer.Remove(self:EntIndex().."BeepSound")
 	if self.Item and self.Item.OnRemove then self.Item:OnRemove() end
 end
  

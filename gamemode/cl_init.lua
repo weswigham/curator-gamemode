@@ -363,7 +363,7 @@ local AllowedElements = { 	"CHudChat",
 							"CHudVoiceSelfStatus"
 						}
 function GM:HUDShouldDraw(element)
-	return table.HasValue(AllowedElements,element)
+	return table.HasValue(AllowedElements,element) or (element == "CHudWeaponSelection" and LocalPlayer():GetNWBool("Curator"))
 end 
 
 local function OpenInventory()

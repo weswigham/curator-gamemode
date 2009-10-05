@@ -86,15 +86,23 @@ end
 
 function GM:PlayerDeath(ply,inf,killr)
 	ply:SetTeam(TEAM_DEAD)
+	if ply ~= self.Curator and ply.ItemList then
+		local ToRemove = {}
+		for k,v in pairs(ply.ItemList) do
+			if v.Entity then
+				ply:ChatPrint("The "..v.Item:GetName().." you stole has been removed from your inventory because of death!")
+				v.Entity:StopFade()
+				table.insert(ToRemove,k)
+			end
+		end
+		for k,v in ipairs(ToRemove) do
+			ply.ItemList[v] = nil
+		end
+		ply:SendItems()
+	end
 end
 
 function GM:ArrestPlayer(ply)
-	ply:KillSilent()
-	ply:Spectate(OBS_MODE_IN_EYE)
-	ply:SpectateEntity(self.Curator)
-	ply:SetMoveType(MOVETYPE_OBSERVER)
-	ply:SetTeam(TEAM_JAILED)
-	ply:Lock()
 	ply.Arrested = true
 	PrintMessage(HUD_PRINTCHAT,ply:Nick().." has been caught and arrested. He is out of the game for 60 seconds!")
 	for k,v in pairs(ply.ItemList) do
@@ -103,11 +111,18 @@ function GM:ArrestPlayer(ply)
 	ply.ItemList = {}
 	ply:SendItems()
 	ply:SetNWInt("money",math.floor(math.Clamp(ply:GetNWInt("money")*0.9,0,9999999)))
+	ply:KillSilent()
+	ply:Spectate(OBS_MODE_IN_EYE)
+	ply:SpectateEntity(self.Curator)
+	ply:SetMoveType(MOVETYPE_OBSERVER)
+	ply:SetTeam(TEAM_JAILED)
+	ply:SetPos(self.Curator:GetPos())
+	ply:Lock()
 end
 
 function GM:UnArrestPlayer(ply)
+	ply:Spectate(OBS_MODE_NONE)
 	ply:UnSpectate()
-	ply:SetMoveType(MOVETYPE_WALK)
 	ply:SetTeam(TEAM_THIEF)
 	ply:UnLock()
 	ply.Arrested = false
@@ -169,7 +184,7 @@ function GM:PlayerLoadout( ply )
 end
 
 function GM:PlayerShouldTakeDamage( ply, attacker )
-	return (not ply:GetNWBool("Curator")) or not (attacker:IsPlayer() and attacker ~= self.Curator)
+	return (not ply == self.Curator) or attacker == self.Curator
 end
 
 function GM:ShowHelp( ply )
@@ -220,6 +235,7 @@ function GM:ShowSpare2(ply)
 end
 
 local SelectionWeights = {}
+SelectionWeights.__mode = "k" --weak keys, so it's rmeoved when the player is unreferenced.
 
 function GM:PlayerInitialSpawn( ply )
 	self.BaseClass:PlayerInitialSpawn( ply )
@@ -362,8 +378,10 @@ function GM:RoundBegin()
 end
 
 local function FadingSholdCollide(e1,e2)
-	if (e1:IsPlayer() or e2:IsPlayer()) and (e1.Fading or e2.Fading) then
+	if e1:IsPlayer() or e2:IsPlayer() or e1.Fading or e2.Fading then
 		return false
+	else
+		return true
 	end
 end
 hook.Add("SholdCollide","CuratorFadingSholdCollide",FadingSholdCollide)
@@ -479,3 +497,12 @@ function Vec:IsInMuseum()
 	return false
 end
 
+
+function Vec:IsInLadder()
+	for k,v in ipairs(ents.FindByClass("trigger_ladder")) do
+		if v:IsPosInBounds(self) then
+			return true
+		end
+	end
+	return false
+end

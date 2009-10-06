@@ -14,6 +14,10 @@ function ENT:Initialize()
 		phys:EnableMotion(true)
 		phys:Wake()
 	end
+	
+	self.MoveRopeName = ""
+	self.RopeName = ""
+	self.Player = nil
 end
 
 function ENT:Think()
@@ -32,7 +36,14 @@ function ENT:PhysicsCollide(data,pobj)
 	if SERVER then
 		if data.HitPos:IsInLadder() then
 			pobj:EnableMotion(false)
-			print("Latched On!")
+			self.HookedOn = true
+			local num = self:GetPos():Distance(self.Player:GetPos())*-1
+			for k,v in ipairs(ents.FindByName(self.RopeName)) do
+				v:SetKeyValue("Slack",tostring(num))
+			end
+			for k,v in ipairs(ents.FindByName(self.MoveRopeName)) do
+				v:SetKeyValue("Slack",tostring(num))
+			end
 		end
 	end
 end 

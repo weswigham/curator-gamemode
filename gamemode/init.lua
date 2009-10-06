@@ -100,6 +100,7 @@ function GM:PlayerDeath(ply,inf,killr)
 		end
 		ply:SendItems()
 	end
+	ply:SetNWInt("Detection",0)
 end
 
 function GM:ArrestPlayer(ply)
@@ -118,6 +119,7 @@ function GM:ArrestPlayer(ply)
 	ply:SetTeam(TEAM_JAILED)
 	ply:SetPos(self.Curator:GetPos())
 	ply:Lock()
+	ply:SetNWInt("Detection",0)
 end
 
 function GM:UnArrestPlayer(ply)
@@ -126,6 +128,7 @@ function GM:UnArrestPlayer(ply)
 	ply:SetTeam(TEAM_THIEF)
 	ply:UnLock()
 	ply.Arrested = false
+	ply:SetNWInt("Detection",0)
 end
 
 function GM:PlayerSpawn( pl )
@@ -242,6 +245,9 @@ function GM:PlayerInitialSpawn( ply )
 	SelectionWeights[ply] = 1
 	ply.ItemList = {}
 
+	for k,v in ipairs(ents.FindByClass("trigger_ladder")) do
+		SendUserMessage("RecieveLadder",ply,v:LocalToWorld(v:OBBMaxs()),v:LocalToWorld(v:OBBMins()))
+	end
 end
 
 function GM:PlayerDisconnected( ply )
@@ -292,7 +298,7 @@ function GM:Think()
 	end
 	for k,v in ipairs(player.GetAll()) do
 		v:SetNWBool("Curator",v == self.Curator)
-		if v ~= self.Curator and v:Team() == TEAM_THIEF and v:GetNWInt("Detection") >= 1000 then
+		if v ~= self.Curator and v:Team() == TEAM_THIEF and v:Alive() and v:GetNWInt("Detection") >= 1000 then
 			self:TriggerAlarm(v:GetPos())
 		end
 		if not v:GetPos():IsInMuseum() then
@@ -308,7 +314,7 @@ function GM:Think()
 				val2 = val2 + v.Item:GetEnthusistHappiness()
 				val3 = val3 + v.Item:GetCollectorHappiness()
 				if not Security.GetItem(v.Item:GetName()) then
-					liquid = liquid + v.Item:GetPrice()*0.5
+					liquid = liquid + v.Item:GetPrice()*(0.1*#player.GetAll())
 				end
 			end
 		end
@@ -342,6 +348,7 @@ function GM:RoundBegin()
 		v:KillSilent()
 		v:SetTeam(TEAM_THIEF)
 	end
+	self.Curator = nil
 	self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)
 	SelectionWeights[self.Curator] = 1
 	self.Curator:SetNWBool("Curator",true)
@@ -377,14 +384,14 @@ function GM:RoundBegin()
 	end)
 end
 
-local function FadingSholdCollide(e1,e2)
-	if e1:IsPlayer() or e2:IsPlayer() or e1.Fading or e2.Fading then
+local function FadingShouldCollide(e1,e2)
+	if (e1:IsPlayer() or e2:IsPlayer()) and (e1.Fading or e2.Fading) then
 		return false
 	else
 		return true
 	end
 end
-hook.Add("SholdCollide","CuratorFadingSholdCollide",FadingSholdCollide)
+hook.Add("ShouldCollide","CuratorFadingShouldCollide",FadingShouldCollide)
 
 function GM:RoundEnd()
 	for k,v in ipairs(player.GetAll()) do
@@ -447,6 +454,31 @@ concommand.Add("curator_spawn_object",function(ply,cmd,args)
 
 end)
 
+concommand.Add("CuratorMoveDone",function(ply,cmd,args)
+	local ent = ents.GetByIndex(args[1])
+    local ang = Angle(FixStrings(unpack(string.Explode(" ",args[2]))))
+    local pos = Vector(FixStrings(unpack(string.Explode(" ",args[3]))))
+	if ply == GAMEMODE.Curator and ent and ent:IsValid() and string.find(ent:GetClass(),"curator_") then
+		local temp = ents.Create("prop_physics")
+		temp:SetModel(ent:GetModel())
+		temp:SetPos(pos)
+		temp:SetAngles(ang)
+		temp:Spawn()
+		temp:Activate()
+		temp:GetPhysicsObject():EnableMotion(false)
+		temp:SetColor(255,255,255,100)
+		timer.Simple(7,function() 
+			temp:Remove()
+			if ent and ent:IsValid() then
+				ent:SetPos(pos)
+				ent:SetAngles(ang)
+			end
+		end)
+	else
+		ply:ChatPrint("You cannot move that object!")
+	end
+end)
+
 concommand.Add("UpdateItems",function(ply,com,arg)
 	ply:SendItems()
 end)
@@ -460,6 +492,19 @@ concommand.Add("BuyItem", function(ply,cmd,arg)
 	ply:BuyItem(arg[1])
 	print("Buying",arg[1])
 	ply:SendItems()
+end)
+
+concommand.Add("CuratorSellOff",function(ply,cmd,arg) 
+	local ent = ents.GetByIndex(arg[1])
+	if ent and ent:IsValid() and string.find(ent:GetClass(),"curator_") and ent.Item then
+		if not ent.Fading then
+			ply:SetNWInt("money",ply:GetNWInt("money")+(ent.Item:GetPrice()*0.25))
+		else
+			ply:ChatPrint("You can't sell what is being stolen!")
+		end
+	else
+		ply:ChatPrint("You can't sell that off!")
+	end
 end)
 
 

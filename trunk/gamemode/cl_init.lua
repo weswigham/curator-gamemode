@@ -363,7 +363,7 @@ local AllowedElements = { 	"CHudChat",
 							"CHudVoiceSelfStatus"
 						}
 function GM:HUDShouldDraw(element)
-	return table.HasValue(AllowedElements,element) or (element == "CHudWeaponSelection" and LocalPlayer():GetNWBool("Curator"))
+	return table.HasValue(AllowedElements,element) or (element == "CHudWeaponSelection" and not LocalPlayer():GetNWBool("Curator"))
 end 
 
 local function OpenInventory()
@@ -427,7 +427,19 @@ function GM:Think()
 end 
 
 function GM:GUIMousePressed(mc)
-    if LocalPlayer().GhostIsActive and mc == 107 then
+    if LocalPlayer().GhostIsActive and mc == 107 and LocalPlayer().GhostIsBeingMoved then
+		LocalPlayer().GhostIsBeingMoved = false
+        LocalPlayer().GhostIsActive = false
+        local item = LocalPlayer().GhostItem
+        RunConsoleCommand("CuratorMoveDone",LocalPlayer().GhostEntIndex,tostring(LocalPlayer().Ghost:GetAngles()),tostring(LocalPlayer().Ghost:GetPos()))
+        LocalPlayer().Ghost:Remove()
+        LocalPlayer().Ghost = nil
+        LocalPlayer().GhostItem = nil
+        LocalPlayer().GhostModel = nil
+        LocalPlayer().GhostType = nil
+		LocalPlayer().GhostEntIndex = nil
+		AddAng = Angle(0,0,0)
+	elseif LocalPlayer().GhostIsActive and mc == 107 then
         LocalPlayer().GhostIsActive = false
         local item = LocalPlayer().GhostItem
         RunConsoleCommand("curator_spawn_object",LocalPlayer().GhostType,item:GetName(),tostring(LocalPlayer().Ghost:GetAngles()),tostring(LocalPlayer().Ghost:GetPos()))
@@ -444,7 +456,30 @@ function GM:GUIMousePressed(mc)
         LocalPlayer().GhostItem = nil
         LocalPlayer().GhostModel = nil
         LocalPlayer().GhostType = nil
+		LocalPlayer().GhostIsBeingMoved = false
+		LocalPlayer().GhostEntIndex = nil
 		AddAng = Angle(0,0,0)
+	elseif mc == 108 and LocalPlayer():GetNWBool("Curator") then
+		local tr = LocalPlayer():GetEyeTrace()
+		if tr.Entity and string.find(tr.Entity:GetClass(),"curator_") then
+			local MenuButtonOptions = DermaMenu()
+			MenuButtonOptions:AddOption("Remove", function() Derma_Query("Are you sure you want to remove this?\nYou will recieve 25% of its original price.","Confirmation Dialogue","Yes",function() RunConsoleCommand("CuratorSellOff",tr.Entity:EntIndex()) end,"No",function() end) end )
+			MenuButtonOptions:AddOption("Move", function() Derma_Query("Are you sure you want to move this?\nYou will recieve 25% of its original price.","Confirmation Dialogue","Yes",function()
+			LocalPlayer().GhostIsBeingMoved = true
+			LocalPlayer().GhostEntIndex = tr.Entity:EntIndex()
+			LocalPlayer().GhostIsActive = true
+			LocalPlayer().GhostModel = tr.Entity:GetModel()
+			if (not LocalPlayer().Ghost) or not LocalPlayer().Ghost:IsValid() then
+				LocalPlayer().Ghost = ClientsideModel(LocalPlayer().GhostModel, RENDERGROUP_OPAQUE)
+			end
+			LocalPlayer().Ghost:SetModel(LocalPlayer().GhostModel or "")
+			LocalPlayer().Ghost:SetNoDraw(false)
+			LocalPlayer().GhostItem = nil
+			LocalPlayer().GhostType = nil
+			end,"No",function() end) end )
+			MenuButtonOptions:AddOption("Close", function() end )
+			MenuButtonOptions:Open()
+		end
     end
 end 
 
@@ -520,3 +555,28 @@ concommand.Add("CloseEndGameWindow", function()
         ply.Endgame:Remove()
     end
 end)
+
+usermessage.Hook("RecieveLadder",function(um)
+	local maxs = um:ReadVector()
+	local mins = um:ReadVector()
+	if not CuratorLadderTable then CuratorLadderTable = {} end
+	table.insert(CuratorLadderTable,{Max = maxs, Min = mins})
+end)
+
+local Vec = FindMetaTable("Vector")
+
+function Vec:IsInLadder()
+	for k,v in ipairs(CuratorLadderTable) do
+		if self:IsPosInBounds(v.Max,v.Min) then
+			return true
+		end
+	end
+	return false
+end 
+
+function Vec:IsPosInBounds(maxvals,offset)
+	if self.x > offset.x and self.y > offset.y and self.z > offset.z and self.x < maxvals.x and self.y < maxvals.y and self.z < maxvals.z then 
+		return true 
+	end
+	return false
+end 

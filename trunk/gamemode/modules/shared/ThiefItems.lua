@@ -108,3 +108,15 @@ Thief.MakeWeaponFunc("weapon_emp"),
 Thief.MakeDestroyFunc("weapon_emp"), 
 nil, 
 "models/Weapons/w_bugbait.mdl"))
+
+Thief.AddItem(GetNewItemObject("Grapplig Hook",
+"W00t, A grappling Hook!", 
+750, 
+-1, 
+0,
+0, 
+0, 
+Thief.MakeWeaponFunc("grappling_hook"),
+Thief.MakeDestroyFunc("grappling_hook"), 
+nil, 
+"models/props_junk/meathook001a.mdl"))

@@ -458,6 +458,8 @@ concommand.Add("CuratorMoveDone",function(ply,cmd,args)
 	local ent = ents.GetByIndex(args[1])
     local ang = Angle(FixStrings(unpack(string.Explode(" ",args[2]))))
     local pos = Vector(FixStrings(unpack(string.Explode(" ",args[3]))))
+	print("Called!",pos,ang,ent)
+	PrintTable(args)
 	if ply == GAMEMODE.Curator and ent and ent:IsValid() and string.find(ent:GetClass(),"curator_") then
 		local temp = ents.Create("prop_physics")
 		temp:SetModel(ent:GetModel())
@@ -466,14 +468,15 @@ concommand.Add("CuratorMoveDone",function(ply,cmd,args)
 		temp:Spawn()
 		temp:Activate()
 		temp:GetPhysicsObject():EnableMotion(false)
-		temp:SetColor(255,255,255,100)
-		timer.Simple(7,function() 
+		temp:SetRenderMode(RENDERMODE_TRANSCOLOR)
+		temp:SetColor(255,255,255,150)
+		timer.Simple(7,function(temp,ent,pos,ang) 
 			temp:Remove()
 			if ent and ent:IsValid() then
 				ent:SetPos(pos)
 				ent:SetAngles(ang)
 			end
-		end)
+		end,temp,ent,pos,ang)
 	else
 		ply:ChatPrint("You cannot move that object!")
 	end
@@ -499,6 +502,8 @@ concommand.Add("CuratorSellOff",function(ply,cmd,arg)
 	if ent and ent:IsValid() and string.find(ent:GetClass(),"curator_") and ent.Item then
 		if not ent.Fading then
 			ply:SetNWInt("money",ply:GetNWInt("money")+(ent.Item:GetPrice()*0.25))
+			if timer.IsTimer(self:EntIndex().."Reenable") then timer.Destroy(self:EntIndex().."Reenable") end
+			ent:Remove()
 		else
 			ply:ChatPrint("You can't sell what is being stolen!")
 		end

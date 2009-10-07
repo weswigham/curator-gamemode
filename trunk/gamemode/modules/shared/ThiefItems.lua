@@ -109,8 +109,8 @@ Thief.MakeDestroyFunc("weapon_emp"),
 nil, 
 "models/Weapons/w_bugbait.mdl"))
 
-Thief.AddItem(GetNewItemObject("Grapplig Hook",
-"W00t, A grappling Hook!", 
+Thief.AddItem(GetNewItemObject("Grappling Hook",
+"W00t, A Grappling Hook!", 
 750, 
 -1, 
 0,

@@ -401,6 +401,7 @@ usermessage.Hook("SetupCuratorSpawnMenu", SetupCMenu)
 
 local yaw = Angle(0,2.5,0)
 local AddAng = Angle(0,0,0)
+local StdRot = Angle(90,0,0)
 
 function GM:Think()
 	if LocalPlayer().GhostIsActive then
@@ -410,8 +411,13 @@ function GM:Think()
 				LocalPlayer().Ghost = ClientsideModel(LocalPlayer().GhostModel, RENDERGROUP_OPAQUE)
 			end
 			LocalPlayer().Ghost:SetModel(LocalPlayer().GhostModel or "")
-			LocalPlayer().Ghost:SetPos(tr.HitPos+(tr.HitNormal*LocalPlayer().GhostItem:GetPosOffset()))
-			LocalPlayer().Ghost:SetAngles(tr.HitNormal:Angle()+LocalPlayer().GhostItem:AngularOffset()+AddAng)
+			if LocalPlayer().GhostItem then
+				LocalPlayer().Ghost:SetPos(tr.HitPos+(tr.HitNormal*LocalPlayer().GhostItem:GetPosOffset()))
+				LocalPlayer().Ghost:SetAngles(tr.HitNormal:Angle()+LocalPlayer().GhostItem:AngularOffset()+AddAng)
+			else
+				LocalPlayer().Ghost:SetPos(tr.HitPos+(tr.HitNormal*(LocalPlayer().Ghost:OBBMins().z)))
+				LocalPlayer().Ghost:SetAngles(tr.HitNormal:Angle()+StdRot+AddAng)
+			end
 			LocalPlayer().Ghost:SetNoDraw(false)
 			if input.IsKeyDown(KEY_LBRACKET) then
 				AddAng = AddAng - yaw
@@ -464,18 +470,18 @@ function GM:GUIMousePressed(mc)
 		if tr.Entity and string.find(tr.Entity:GetClass(),"curator_") then
 			local MenuButtonOptions = DermaMenu()
 			MenuButtonOptions:AddOption("Remove", function() Derma_Query("Are you sure you want to remove this?\nYou will recieve 25% of its original price.","Confirmation Dialogue","Yes",function() RunConsoleCommand("CuratorSellOff",tr.Entity:EntIndex()) end,"No",function() end) end )
-			MenuButtonOptions:AddOption("Move", function() Derma_Query("Are you sure you want to move this?\nYou will recieve 25% of its original price.","Confirmation Dialogue","Yes",function()
-			LocalPlayer().GhostIsBeingMoved = true
-			LocalPlayer().GhostEntIndex = tr.Entity:EntIndex()
-			LocalPlayer().GhostIsActive = true
-			LocalPlayer().GhostModel = tr.Entity:GetModel()
-			if (not LocalPlayer().Ghost) or not LocalPlayer().Ghost:IsValid() then
-				LocalPlayer().Ghost = ClientsideModel(LocalPlayer().GhostModel, RENDERGROUP_OPAQUE)
-			end
-			LocalPlayer().Ghost:SetModel(LocalPlayer().GhostModel or "")
-			LocalPlayer().Ghost:SetNoDraw(false)
-			LocalPlayer().GhostItem = nil
-			LocalPlayer().GhostType = nil
+			MenuButtonOptions:AddOption("Move", function() Derma_Query("Are you sure you'd like to move this object?","Confirmation Dialogue","Yes",function()
+				LocalPlayer().GhostIsBeingMoved = true
+				LocalPlayer().GhostEntIndex = tr.Entity:EntIndex()
+				LocalPlayer().GhostIsActive = true
+				LocalPlayer().GhostModel = tr.Entity:GetModel()
+				if (not LocalPlayer().Ghost) or not LocalPlayer().Ghost:IsValid() then
+					LocalPlayer().Ghost = ClientsideModel(LocalPlayer().GhostModel, RENDERGROUP_OPAQUE)
+				end
+				LocalPlayer().Ghost:SetModel(LocalPlayer().GhostModel or "")
+				LocalPlayer().Ghost:SetNoDraw(false)
+				LocalPlayer().GhostItem = nil
+				LocalPlayer().GhostType = nil
 			end,"No",function() end) end )
 			MenuButtonOptions:AddOption("Close", function() end )
 			MenuButtonOptions:Open()

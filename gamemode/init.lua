@@ -28,6 +28,8 @@ resource.AddFile("materials/CuratorHUD/lock.vtf")
 resource.AddFile("materials/CuratorHUD/family.vtf")
 resource.AddFile("materials/CuratorHUD/fancy.vtf")
 resource.AddFile("materials/CuratorHUD/person.vtf")
+resource.AddFile("materials/effects/emp_ring.vmt")
+resource.AddFile("materials/effects/emp_blast.vtf")
 
 function GM:Initialize()
 end
@@ -138,6 +140,9 @@ function GM:PlayerSpawn( pl )
 		pl:SetMoveType(MOVETYPE_WALK)
 		pl:SetNoDraw(false)
 		pl:SetTeam(TEAM_THIEF)
+		for k,v in pairs(pl.ItemList) do
+			if v.OnSpawn then v:OnSpawn(pl) end
+		end
 	else
 		pl:SetMoveType(MOVETYPE_NOCLIP)
 		local tbl = ents.FindByClass("info_curator_start")
@@ -172,12 +177,6 @@ end
 function GM:PlayerLoadout( ply )
 
 	ply:RemoveAllAmmo()
-	
-	if (not ply:GetNWBool("Curator")) and ply ~= self.Curator then
-		for k,v in pairs(ply.ItemList) do
-			if v.OnSpawn then v:OnSpawn(ply) end
-		end
-	end
 
 	local cl_defaultweapon = ply:GetInfo( "cl_defaultweapon" )
 
@@ -454,12 +453,18 @@ concommand.Add("curator_spawn_object",function(ply,cmd,args)
 
 end)
 
+concommand.Add("CuratorUpdateEnt",function(ply,cmd,args)
+	local idx = args[1]
+	local ent = ents.GetByIndex(idx)
+	if ply == GAMEMODE.Curator and ent and ent.RequestItem then
+		ent:RequestItem()
+	end
+end)
+
 concommand.Add("CuratorMoveDone",function(ply,cmd,args)
 	local ent = ents.GetByIndex(args[1])
     local ang = Angle(FixStrings(unpack(string.Explode(" ",args[2]))))
     local pos = Vector(FixStrings(unpack(string.Explode(" ",args[3]))))
-	print("Called!",pos,ang,ent)
-	PrintTable(args)
 	if ply == GAMEMODE.Curator and ent and ent:IsValid() and string.find(ent:GetClass(),"curator_") then
 		local temp = ents.Create("prop_physics")
 		temp:SetModel(ent:GetModel())
@@ -467,9 +472,8 @@ concommand.Add("CuratorMoveDone",function(ply,cmd,args)
 		temp:SetAngles(ang)
 		temp:Spawn()
 		temp:Activate()
+		temp:SetColor(255,255,255,100)
 		temp:GetPhysicsObject():EnableMotion(false)
-		temp:SetRenderMode(RENDERMODE_TRANSCOLOR)
-		temp:SetColor(255,255,255,150)
 		timer.Simple(7,function(temp,ent,pos,ang) 
 			temp:Remove()
 			if ent and ent:IsValid() then
@@ -502,7 +506,7 @@ concommand.Add("CuratorSellOff",function(ply,cmd,arg)
 	if ent and ent:IsValid() and string.find(ent:GetClass(),"curator_") and ent.Item then
 		if not ent.Fading then
 			ply:SetNWInt("money",ply:GetNWInt("money")+(ent.Item:GetPrice()*0.25))
-			if timer.IsTimer(self:EntIndex().."Reenable") then timer.Destroy(self:EntIndex().."Reenable") end
+			if timer.IsTimer(ent:EntIndex().."Reenable") then timer.Destroy(ent:EntIndex().."Reenable") end
 			ent:Remove()
 		else
 			ply:ChatPrint("You can't sell what is being stolen!")
@@ -555,4 +559,11 @@ function Vec:IsInLadder()
 		end
 	end
 	return false
+end
+
+local Entity = FindMetaTable("Entity")
+function Entity:RequestItem()
+	if self.Item and GAMEMODE.Curator then
+		SendUserMessage("RecieveCuratorEntItem",GAMEMODE.Curator,self:EntIndex(),self.Item:GetName(),self.IType)
+	end
 end

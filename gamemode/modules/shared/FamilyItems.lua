@@ -34,6 +34,7 @@ function Family.MakeStandardSpawnFunc(class)
 		ent:SetPos(pos)
 		ent:SetAngles(ang)
 		ent.Item = item:CopyTo(GetNewItemObject())
+		ent.IType = "Family"
 		ent:SetModel(item:GetModel())
 		ent:Spawn()
         AccessorFunc(ent,"t_pOwner","Player")

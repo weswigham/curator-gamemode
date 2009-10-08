@@ -63,3 +63,10 @@ function math.wrap(number,mins,maxs)
 		return number
 	end
 end 
+
+function ENT:Initialize()
+	self.BaseClass.Initialize(self)
+	if LocalPlayer():GetNWBool("Curator") then
+		RunConsoleCommand("CuratorUpdateEnt",self:EntIndex())
+	end
+end 

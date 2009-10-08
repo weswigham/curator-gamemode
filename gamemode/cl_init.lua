@@ -382,7 +382,7 @@ local function OpenInventory()
 end
 hook.Add("OnSpawnMenuOpen", "OpenInventory", OpenInventory)
 
-function CloseInventory()
+local function CloseInventory()
 	if ValidEntity(LocalPlayer().Inventory) then
 		LocalPlayer().Inventory:Close()
 	end
@@ -390,7 +390,7 @@ end
 hook.Add("OnSpawnMenuClose", "CloseInventory", CloseInventory)
 
 
-function SetupCMenu(msg)
+local function SetupCMenu(msg)
 	if ValidEntity(CMenu) then CMenu:SetVisible(false) CMenu:Remove() CMenu = nil MainP:Remove() MainP = nil end
 	--if ValidEntity(CMenu) then CMenu:SetVisible(false) CMenu:Remove() CMenu = nil end
 	CMenu = vgui.Create("CuratorSpawnM")
@@ -398,6 +398,20 @@ function SetupCMenu(msg)
 	CMenu:SetPos(5, 5)
 end
 usermessage.Hook("SetupCuratorSpawnMenu", SetupCMenu)
+
+local function RecieveCuratorEntItem(um)
+	local idx = um:ReadLong()
+	local itm = um:ReadString()
+	local itpe = um:ReadString()
+	local ent = ents.GetByIndex(idx)
+	local item = _G[itpe].GetItem(itm)
+	
+	if ent and ent:IsValid() and item then
+		ent.Item = item
+		ent.IType = itpe
+	end
+end
+usermessage.Hook("RecieveCuratorEntItem",RecieveCuratorEntItem)
 
 local yaw = Angle(0,2.5,0)
 local AddAng = Angle(0,0,0)
@@ -411,13 +425,10 @@ function GM:Think()
 				LocalPlayer().Ghost = ClientsideModel(LocalPlayer().GhostModel, RENDERGROUP_OPAQUE)
 			end
 			LocalPlayer().Ghost:SetModel(LocalPlayer().GhostModel or "")
-			if LocalPlayer().GhostItem then
-				LocalPlayer().Ghost:SetPos(tr.HitPos+(tr.HitNormal*LocalPlayer().GhostItem:GetPosOffset()))
-				LocalPlayer().Ghost:SetAngles(tr.HitNormal:Angle()+LocalPlayer().GhostItem:AngularOffset()+AddAng)
-			else
-				LocalPlayer().Ghost:SetPos(tr.HitPos+(tr.HitNormal*(LocalPlayer().Ghost:OBBMins().z)))
-				LocalPlayer().Ghost:SetAngles(tr.HitNormal:Angle()+StdRot+AddAng)
-			end
+
+			LocalPlayer().Ghost:SetPos(tr.HitPos+(tr.HitNormal*LocalPlayer().GhostItem:GetPosOffset()))
+			LocalPlayer().Ghost:SetAngles(tr.HitNormal:Angle()+LocalPlayer().GhostItem:AngularOffset()+AddAng)
+
 			LocalPlayer().Ghost:SetNoDraw(false)
 			if input.IsKeyDown(KEY_LBRACKET) then
 				AddAng = AddAng - yaw
@@ -471,18 +482,25 @@ function GM:GUIMousePressed(mc)
 			local MenuButtonOptions = DermaMenu()
 			MenuButtonOptions:AddOption("Remove", function() Derma_Query("Are you sure you want to remove this?\nYou will recieve 25% of its original price.","Confirmation Dialogue","Yes",function() RunConsoleCommand("CuratorSellOff",tr.Entity:EntIndex()) end,"No",function() end) end )
 			MenuButtonOptions:AddOption("Move", function() Derma_Query("Are you sure you'd like to move this object?","Confirmation Dialogue","Yes",function()
-				LocalPlayer().GhostIsBeingMoved = true
-				LocalPlayer().GhostEntIndex = tr.Entity:EntIndex()
-				LocalPlayer().GhostIsActive = true
-				LocalPlayer().GhostModel = tr.Entity:GetModel()
-				if (not LocalPlayer().Ghost) or not LocalPlayer().Ghost:IsValid() then
-					LocalPlayer().Ghost = ClientsideModel(LocalPlayer().GhostModel, RENDERGROUP_OPAQUE)
+				if tr.Entity.Item then
+					LocalPlayer().GhostIsBeingMoved = true
+					LocalPlayer().GhostEntIndex = tr.Entity:EntIndex()
+					LocalPlayer().GhostIsActive = true
+					LocalPlayer().GhostModel = tr.Entity:GetModel()
+					if (not LocalPlayer().Ghost) or not LocalPlayer().Ghost:IsValid() then
+						LocalPlayer().Ghost = ClientsideModel(LocalPlayer().GhostModel, RENDERGROUP_OPAQUE)
+					end
+					LocalPlayer().Ghost:SetModel(LocalPlayer().GhostModel or "")
+					LocalPlayer().Ghost:SetNoDraw(false)
+					LocalPlayer().GhostItem = tr.Entity.Item
+					LocalPlayer().GhostType = tr.Entity.IType
+				else
+					print("NO ITEM FOUND YOUR ROFLCATS")
 				end
-				LocalPlayer().Ghost:SetModel(LocalPlayer().GhostModel or "")
-				LocalPlayer().Ghost:SetNoDraw(false)
-				LocalPlayer().GhostItem = nil
-				LocalPlayer().GhostType = nil
 			end,"No",function() end) end )
+			if tr.Entity.IType and tr.Entity.IType == "Security" then
+				MenuButtonOptions:AddOption("Harden (EMP Protection)", function() end )
+			end
 			MenuButtonOptions:AddOption("Close", function() end )
 			MenuButtonOptions:Open()
 		end

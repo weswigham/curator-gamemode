@@ -1,8 +1,8 @@
 
 SWEP.Author			= "Levybreak"
 SWEP.Contact		= "Facepunch"
-SWEP.Purpose		= "Grapple with it."
-SWEP.Instructions	= "To climb up the walls of building at specified points."
+SWEP.Purpose		= "Grapple with it. To climb up the walls of building at specified points."
+SWEP.Instructions	= "Left click to throw out at hook onto a green O area. Right click to remove it. When hooked, hold forward to move up it."
 
 SWEP.Spawnable			= false
 SWEP.AdminSpawnable		= false

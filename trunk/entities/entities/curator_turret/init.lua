@@ -44,7 +44,7 @@ function ENT:Think()
 			tbl.Spread=Vector(0.02,0.02,0)
 			tbl.Tracer=1	
 			tbl.Force = 4
-			tbl.Damage = 7
+			tbl.Damage = 4
 			tbl.Attacker = GAMEMODE.Curator
 			tbl.TracerName = "GunshipTracer" --it's larger this way.
 			self:FireBullets(tbl)
@@ -80,7 +80,7 @@ function ENT:UpdateTransmitState()
 	return TRANSMIT_ALWAYS
 end
 
-function ENT:TemporarilyDisable()
+function ENT:TemporarilyDisable(num)
 	self:DeActivate()
-	self.timer = timer.Create(self:EntIndex().."Reenable",5,1,function() self:ReActivate() end)
+	self.timer = timer.Create(self:EntIndex().."Reenable",num or 5,1,function() self:ReActivate() end)
 end 

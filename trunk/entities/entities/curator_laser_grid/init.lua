@@ -28,7 +28,7 @@ function ENT:Think()
 			local start = self:GetPos()+(self:GetAngles():Up()*i*DistInc)+addr
 			tr[i] = util.QuickTraceHull(start,self:GetAngles():Right()*1000,self:OBBMins()/numtra,self:OBBMaxs()/numtra,self) --convoluted shit here. All for the sake of resolution.
 			if tr[i].Entity and tr[i].Entity:IsValid() and tr[i].Entity:IsPlayer() and tr[i].Entity ~= GAMEMODE.Curator then
-				tr[i].Entity:TakeDamage(3,GAMEMODE.Curator,self)
+				tr[i].Entity:TakeDamage(2,GAMEMODE.Curator,self)
 				tr[i].Entity:SetNWInt("Detection",math.Clamp(tr[i].Entity:GetNWInt("Detection")+100,0,1000))
 				debugoverlay.Line( self:GetPos(), tr[i].HitPos)
 			end
@@ -56,8 +56,7 @@ end
 function ENT:UpdateTransmitState()
 	return TRANSMIT_ALWAYS
 end
-
-function ENT:TemporarilyDisable()
+function ENT:TemporarilyDisable(num)
 	self:DeActivate()
-	self.timer = timer.Create(self:EntIndex().."Reenable",5,1,function() self:ReActivate() end)
+	self.timer = timer.Create(self:EntIndex().."Reenable",num or 5,1,function() self:ReActivate() end)
 end 

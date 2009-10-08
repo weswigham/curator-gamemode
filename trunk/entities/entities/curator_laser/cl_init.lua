@@ -18,3 +18,10 @@ function ENT:Draw()
 		debugoverlay.Line( self:GetPos(), tr.HitPos)
 	end
 end 
+
+function ENT:Initialize()
+	self.BaseClass.Initialize(self)
+	if LocalPlayer():GetNWBool("Curator") then
+		RunConsoleCommand("CuratorUpdateEnt",self:EntIndex())
+	end
+end 

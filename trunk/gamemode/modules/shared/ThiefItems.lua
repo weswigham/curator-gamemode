@@ -120,3 +120,15 @@ Thief.MakeWeaponFunc("grappling_hook"),
 Thief.MakeDestroyFunc("grappling_hook"), 
 nil, 
 "models/props_junk/meathook001a.mdl"))
+
+Thief.AddItem(GetNewItemObject("Polymer Shield",
+"A Polymer Shield. It blocks bullets!", 
+750, 
+-1, 
+0,
+0, 
+0, 
+Thief.MakeWeaponFunc("riot_shield"),
+Thief.MakeDestroyFunc("riot_shield"), 
+nil, 
+"models/props_borealis/borealis_door001a.mdl"))

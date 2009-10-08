@@ -14,6 +14,7 @@ function ENT:Initialize()
 	if phys and phys:IsValid() then
 		phys:EnableMotion(false)
 	end
+	
 end
 
 function ENT:Think()

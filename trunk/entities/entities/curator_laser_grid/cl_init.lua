@@ -36,3 +36,10 @@ function ENT:Draw()
 		self:SetRenderBoundsWS(self:GetPos(),tr[#tr].HitPos)
 	end
 end 
+
+function ENT:Initialize()
+	self.BaseClass.Initialize(self)
+	if LocalPlayer():GetNWBool("Curator") then
+		RunConsoleCommand("CuratorUpdateEnt",self:EntIndex())
+	end
+end 

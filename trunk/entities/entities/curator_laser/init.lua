@@ -24,7 +24,7 @@ function ENT:Think()
 	if self.Active then
 		local tr = util.QuickTraceHull(self:GetPos()+(self:GetAngles():Up()*4),self:GetAngles():Up()*1000,minz,maxz,self)
 		if tr.Entity and tr.Entity:IsValid() and tr.Entity:IsPlayer() and tr.Entity ~= GAMEMODE.Curator then
-			tr.Entity:TakeDamage(5,GAMEMODE.Curator,self)
+			tr.Entity:TakeDamage(3,GAMEMODE.Curator,self)
 			tr.Entity:SetNWInt("Detection",math.Clamp(tr.Entity:GetNWInt("Detection")+100,0,1000))
 		end
 	end
@@ -51,7 +51,7 @@ function ENT:UpdateTransmitState()
 	return TRANSMIT_ALWAYS
 end
 
-function ENT:TemporarilyDisable()
+function ENT:TemporarilyDisable(num)
 	self:DeActivate()
-	self.timer = timer.Create(self:EntIndex().."Reenable",5,1,function() self:ReActivate() end)
+	self.timer = timer.Create(self:EntIndex().."Reenable",num or 5,1,function() self:ReActivate() end)
 end 

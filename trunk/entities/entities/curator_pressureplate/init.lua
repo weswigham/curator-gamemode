@@ -44,7 +44,7 @@ function ENT:DeActivate()
 	self.Active = false
 end 
 
-function ENT:TemporarilyDisable()
+function ENT:TemporarilyDisable(num)
 	self:DeActivate()
-	self.timer = timer.Create(self:EntIndex().."Reenable",5,1,function() self:ReActivate() end)
+	self.timer = timer.Create(self:EntIndex().."Reenable",num or 5,1,function() self:ReActivate() end)
 end 

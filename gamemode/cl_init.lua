@@ -478,7 +478,7 @@ function GM:GUIMousePressed(mc)
 		AddAng = Angle(0,0,0)
 	elseif mc == 108 and LocalPlayer():GetNWBool("Curator") then
 		local tr = LocalPlayer():GetEyeTrace()
-		if tr.Entity and string.find(tr.Entity:GetClass(),"curator_") then
+		if tr.Entity and string.find(tr.Entity:GetClass(),"curator_") and not string.find(tr.Entity:GetClass(),"junk") then
 			local MenuButtonOptions = DermaMenu()
 			MenuButtonOptions:AddOption("Remove", function() Derma_Query("Are you sure you want to remove this?\nYou will recieve 25% of its original price.","Confirmation Dialogue","Yes",function() RunConsoleCommand("CuratorSellOff",tr.Entity:EntIndex()) end,"No",function() end) end )
 			MenuButtonOptions:AddOption("Move", function() Derma_Query("Are you sure you'd like to move this object?","Confirmation Dialogue","Yes",function()
@@ -495,7 +495,7 @@ function GM:GUIMousePressed(mc)
 					LocalPlayer().GhostItem = tr.Entity.Item
 					LocalPlayer().GhostType = tr.Entity.IType
 				else
-					print("NO ITEM FOUND YOUR ROFLCATS")
+					print("NO ITEM FOUND: ALL YOUR BASE ARE BELONG TO US. ~ CATS")
 				end
 			end,"No",function() end) end )
 			if tr.Entity.IType and tr.Entity.IType == "Security" then

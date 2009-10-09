@@ -216,12 +216,8 @@ function GM:Payday()
 			elseif v.Item:GetCollectorHappiness() < 0 then
 				v.Item:SetCollectorHappiness(math.Clamp(v.Item:GetCollectorHappiness()/DecayFactor,-100,-0.25))
 			end
-			if not Security.GetItem(v.Item:GetName()) then
-				liquid = liquid + v.Item:GetPrice()*0.5
-			end
 		end
 	end
-	self.Curator:SetNWInt("liquid",liquid)
 end
 
 function GM:ShowTeam(ply)
@@ -313,7 +309,7 @@ function GM:Think()
 				val2 = val2 + v.Item:GetEnthusistHappiness()
 				val3 = val3 + v.Item:GetCollectorHappiness()
 				if not Security.GetItem(v.Item:GetName()) then
-					liquid = liquid + v.Item:GetPrice()*(0.1*#player.GetAll())
+					liquid = liquid + v.Item:GetPrice()*(0.1*math.Clamp(#player.GetAll()-1,1,10))
 				end
 			end
 		end
@@ -346,6 +342,7 @@ function GM:RoundBegin()
 		v:StripWeapons()
 		v:KillSilent()
 		v:SetTeam(TEAM_THIEF)
+		v:SetNoDraw(false)
 	end
 	self.Curator = nil
 	self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)
@@ -353,6 +350,7 @@ function GM:RoundBegin()
 	self.Curator:SetNWBool("Curator",true)
 	self.Curator:SetNWInt("money",10000)
 	self.Curator:SetTeam(TEAM_CURATOR)
+	self.Curator:SetNoDraw(true)
 	
 	local tbl = ents.FindByClass("info_curator_start")
 	if tbl[1] then

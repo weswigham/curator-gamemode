@@ -531,20 +531,29 @@ concommand.Add("OpenEndGameWindow", function()
 	ply.Endgame.PaintOver = function()
 		draw.SimpleText(Winner,Font,(ScrW()/2),40,WhiteCol,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		draw.RoundedBox(20,20,100,ScrW()-40,(ScrH()-100)/2-30,BGCol)
-		draw.RoundedBox(20,20,(ScrH()-100)/2+100,ScrW()-40,ScrH()-((ScrH()-100)/2+100)-30,BGCol)
+		
+		local BottomX,BottomY = 20,(ScrH()-100)/2+100
+		local BottomW,BottomH = ScrW()-40,ScrH()-((ScrH()-100)/2+100)-30
+		draw.RoundedBox(20,BottomX,BottomY,BottomW,BottomH,BGCol)
 			
 		local tIDFont = "TargetID"
 		surface.SetFont(tIDFont)
 		
 		local fntw,fnth = surface.GetTextSize(tIDFont)
 		
+		
+		draw.SimpleText("Thief Stats",tIDFont,ScrW()/2,95-fnth,HPCol,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)	
+				
+				
 		local MaxNumPlayersShown = math.floor(((ScrH()-100)/2-30)/(fnth+4))
 		
 		local thieves = player.GetAll( )
 		local removal = nil
+		local curator = nil
 		for k,v in ipairs(thieves) do
 			if v:GetNWBool("Curator") then
 				removal = k
+				curator = v
 				break
 			end
 		end
@@ -561,8 +570,28 @@ concommand.Add("OpenEndGameWindow", function()
 			elseif i == MaxNumPlayersShown then
 				local Text = "Total Cash: $"..ThiefCash
 				local ox,oy = surface.GetTextSize(Text)
-				draw.SimpleText(Text,tIDFont,ScrW()-ox-24,100+((fnth+4)*i),HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText(Text,tIDFont,ScrW()-ox-24,95+((fnth+4)*i),HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
 			end
+		end
+		
+		do --Curator endgame stuff, the extra layer makes it indent better, and gives it it's own set of local variables.
+			draw.SimpleText("Curator Stats",tIDFont,ScrW()/2,BottomY-5-fnth,team.GetColor(curator:Team()),TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		
+			draw.SimpleText(curator:Nick(),tIDFont,BottomX+20,BottomY+20,team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			draw.SimpleText("Money: $"..curator:GetNWInt("money"),tIDFont,BottomX+20,(BottomY+20)+(fnth+4),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			draw.SimpleText("Liquid: $"..curator:GetNWInt("liquid"),tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*2),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			draw.SimpleText("Total: $"..(curator:GetNWInt("liquid")+curator:GetNWInt("money")),tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*3),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			
+			draw.SimpleText("Ammount of Art at Endgame: "..#ents.FindByClass("curator_art"),tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*5),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			
+			local securityAmt = 0
+			securityAmt = securityAmt + #ents.FindByClass("curator_camera")
+			securityAmt = securityAmt + #ents.FindByClass("curator_pressureplate")
+			securityAmt = securityAmt + #ents.FindByClass("curator_turret")
+			securityAmt = securityAmt + #ents.FindByClass("curator_laser")
+			securityAmt = securityAmt + #ents.FindByClass("curator_laser_grid")
+
+			draw.SimpleText("Ammount of Security at Endgame: "..securityAmt,tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*6),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 		end
 	end
 	
@@ -587,6 +616,350 @@ usermessage.Hook("RecieveLadder",function(um)
 	table.insert(CuratorLadderTable,{Max = maxs, Min = mins})
 end)
 
+local RedCol = Color(255,0,0,255)
+
+local CuratorIconHelp = {"These are the Curator Spawn Menu Icons,",
+"You click on one of these to open up (or", 
+"close) its designated subcategory.",
+"The Lock - Security Features",
+"The 3 People - Family-Based Art (least)",
+"The Top Hat and Cane Guy - Fancy Art (most)",
+"The 1 Person - Enthusist Art (middle)",
+"",
+"Shift Toggles Your Mouse.",
+"",
+"Right Clicking on a spawn icon shows", 
+"detailed information on that item.",
+"",
+"Right clicking on an object you've spawned",
+"gives you the options to either move, remove,",
+"or harden it. Moving takes 7 seconds, removing",
+"gives 25% of the original price, and hardening",
+"protects that security feature from EMPs."}
+
+local CuratorHappinessHelp = {"This the museum's customer happiness",
+"bar. There are 3 different types:",
+"Family (Yellow) - Pays the least",
+"Enthusist (Blue) - Pays Middle Ammount",
+"Collector/Fancy (Green) - Pays the most.",
+"The money your earn each minute on payday",
+"is determined by these 3 values, the higher",
+"the better!"}
+
+local CuratorTimerHelp = {"This is the timer. It shows the ammount of ",
+"time remaining in the round. Your payday",
+"is every minute on the minute. Happiness",
+"decreases a bit on each payday."}
+
+local CuratorSpawnMenuHelp = {"This is the spawn menu area, Once you've ",
+"selected an icon on the left, the items from",
+"that category that you can spawn show up here."}
+
+local ThiefDetectionHelp = {"This is your detection bar, when it is ",
+"filled, the museum alarm goes off!",
+"Security cameras, lasers, and",
+"pressure plates all increase your",
+"detection! (It fills from top to",
+"bottom, FYI)"}
+
+local ThiefHPHelp = {"This is your HPBar, when it's empty,",
+"You're dead."}
+
+local ThiefStealingHelp = {"This is your stealing progress bar area;",
+"It appears when you are stealing something.",
+"Stealing takes 3 seconds. (And another useful ",
+"tidbit of information: Security features take",
+"5 seconds to active, 7 seconds to recover from",
+"an EMP, and the museum alarm arrests everybody",
+"in the museum after 10 seconds! Being arrested",
+"removes you form the game for 60 seconds!)"}
+
+local ThiefTimerHelp = {"This is the round timer, a round", 
+"is 10 minutes long, normally."}
+
+usermessage.Hook("OpenHelp",function(um)
+	local ply = LocalPlayer()
+	if not ply.Open then
+		ply.Open = true
+		if ply:GetNWBool("Curator") then
+			HelpMenu("Curator")
+		else
+			HelpMenu()
+		end
+		hook.Add("HUDPaint","CuratorHUDPaintHelp",function() 
+			if ply:GetNWInt("Curator") then --Curator Help Stuff
+				surface.SetDrawColor( 255,0,0,255 )
+				surface.DrawOutlinedRect(5,5, 134, 152 )
+				surface.DrawOutlinedRect(4,4, 136, 154 )
+				surface.DrawOutlinedRect(3,3, 138, 156 )
+				
+				
+				local tIDFont = "TargetID"
+				surface.SetFont(tIDFont)
+		
+				local fntw,fnth = surface.GetTextSize(tIDFont)
+				
+				surface.DrawLine(141,159,5,160+(fnth))
+				
+				for k,v in ipairs(CuratorIconHelp) do
+					draw.SimpleText(v,tIDFont,5,160+(fnth*k),RedCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+				end
+				
+				surface.DrawOutlinedRect(144,5, 532, 136 )
+				surface.DrawOutlinedRect(143,4, 534, 138 )
+				surface.DrawOutlinedRect(142,3, 536, 140 )
+				surface.DrawLine(142+536,143,ScrW()/2,145+fnth)
+
+				
+				for k,v in ipairs(CuratorSpawnMenuHelp) do
+					draw.SimpleText(v,tIDFont,ScrW()/2, 145+(fnth*k),RedCol,TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				end
+				
+				surface.DrawOutlinedRect(0,ScrH()-(ScrH()/5), ScrW()/4, ScrH()/5 )
+				surface.DrawOutlinedRect(0,ScrH()-(ScrH()/5)-1, ScrW()/4+1, ScrH()/5+2 )
+				surface.DrawOutlinedRect(0,ScrH()-(ScrH()/5)-2, ScrW()/4+2, ScrH()/5+4 )
+				surface.DrawLine(ScrW()/4,ScrH()-(ScrH()/5),ScrW()/4+10,ScrH()-(ScrH()/3.8)+fnth)
+				
+				for k,v in ipairs(CuratorHappinessHelp) do
+					draw.SimpleText(v,tIDFont,ScrW()/4+10, ScrH()-(ScrH()/3.8)+(fnth*k),RedCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+				end
+				
+				surface.DrawOutlinedRect(ScrW()-ScrW()/6,1,ScrW()/6,ScrH()/10*9)
+				surface.DrawOutlinedRect(ScrW()-ScrW()/6-1,0,ScrW()/6+2,ScrH()/10*9+2)
+				surface.DrawOutlinedRect(ScrW()-ScrW()/6-2,0,ScrW()/6+4,ScrH()/10*9+4)
+				surface.DrawLine(ScrW()-(fntw*8), 300+(fnth),ScrW()-ScrW()/6,1)
+				
+				for k,v in ipairs(CuratorTimerHelp) do
+					draw.SimpleText(v,tIDFont,ScrW()-(fntw*8), 300+(fnth*k),RedCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+				end
+			else --Thief help stuff
+				surface.SetDrawColor( 255,0,0,255 )
+				
+				local tIDFont = "TargetID"
+				surface.SetFont(tIDFont)
+		
+				local fntw,fnth = surface.GetTextSize(tIDFont)
+				
+				for k,v in ipairs(ThiefDetectionHelp) do
+					draw.SimpleText(v,tIDFont,35,160+(fnth*k),RedCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+				end
+				
+				surface.DrawOutlinedRect((ScrW()/2)-150,0,150,30)
+				
+				for k,v in ipairs(ThiefStealingHelp) do
+					draw.SimpleText(v,tIDFont,ScrW()/2, 5+(fnth*k),RedCol,TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				end
+				
+				for k,v in ipairs(ThiefHPHelp) do
+					draw.SimpleText(v,tIDFont,ScrW()/10, ScrH()-(ScrH()/5)+(fnth*k),RedCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+				end
+				
+				for k,v in ipairs(ThiefTimerHelp) do
+					draw.SimpleText(v,tIDFont,ScrW()-(fntw*6), 300+(fnth*k),RedCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+				end
+			end
+		end)
+	else
+		ply.Open = nil
+		hook.Remove("HUDPaint","CuratorHUDPaintHelp")
+		if ply.DHelp and ValidEntity(ply.DHelp) then HelpMenu() else ply.DHelp = nil end
+	end
+end)
+
+local CuratorHelpCategories = {}
+CuratorHelpCategories["Basic"] = {"WELCOME TO CURATOR!",
+"",
+"As the Curator your goal is to create a thiving",
+"museum and to protectect it from thieves!"}
+CuratorHelpCategories["Controls"] = {"Controls:",
+"",
+"W - Forward",
+"A - Left",
+"S - Back",
+"D - Right",
+"Space - Up (Normal controls while in noclip, essentially.)",
+"Shift - Toggle Between Cursor Mode and Freelook Mode",
+"[ - Rotate an object attached to your mouse",
+"] - Rotate an object attached to your mouse in the opposite direction",
+"F1 - Open/Close Help HUD/Menu (But you already knew that, right?)"}
+CuratorHelpCategories["Spawning Objects"] = {"How to spawn an object:",
+"",
+"1. Click on the item's spawn icon.",
+"2. Position the object in the world using your mouse.",
+"3. Use [ and ] to rotate the object if desired.",
+"4. Left click to spawn the object."}
+CuratorHelpCategories["Advanced"] = {"Advanced Gameplay Information:",
+"",
+"- You can right click on an object to get a popup menu of ",
+"   options for it.",
+"- These options are Remove, Move, if it's a secutity item, Harden, and Close.",
+"- Remove removes the object and returns 25% of its original cost to you.",
+"- Move allows you to move the object. It attaches the object to your cursor",
+"   as if you were spawning an object normally. Once you have clicked on a",
+"   location, a ghost will appear at that location, and the object itself",
+"   will move there in 7 seconds.",
+"- Harden allows you to harden the device's electronics, thus protecting",
+"   it form EMP effects. (This is still WIP and does not do anything)",
+"- Close closes the menu.",
+"",
+"- Gamemode Thread: http://www.facepunch.com/showthread.php?t=821918",
+"- Gamemode Coding Competition Entry, Sept/Oct. 2009",
+"- By LevyBreak (And The Curator Spawn Menu by Find Me)"}
+
+local ThiefHelpCategories = {}
+ThiefHelpCategories["Basic"] = {"WELCOME TO CURATOR!",
+"",
+"As a thief, your goal is to make a dishonest living",
+"by stealing from the museum run by the Curator!",
+"",
+"You can fund your first break in by collecting junk from around the map and",
+"selling it to the shop. It is also reccomended you read the rest of this help",
+"menu as well."}
+ThiefHelpCategories["Controls"] = {"Controls:",
+"",
+"W - Forward",
+"A - Left",
+"S - Back",
+"D - Right",
+"Space - Jump (All normal controls, AFAIK)",
+"Q - Open Up A Quick List of Your Current Inventory",
+"Use - Pick up Art/Junk, Activate Events, Standard Use Usage.",
+"F1 - Open/Close Help HUD/Menu (But you already knew that, right?)"}
+ThiefHelpCategories["The Shop"] = {"The Shop:",
+"",
+"- Is the washing machine near your spawn.",
+"- Press your 'Use' key on it to use it. (Duh)",
+"- The top is items for sale, the bottom is items you have",
+"- You can right click on an item to see more detailed information on it."}
+ThiefHelpCategories["Weapon List"] = {"Pocket EMP:",
+"",
+"- Left Click Activates, temporarily disables any (unhardened) security within a 700 unit radius.",
+"- Single Use Only",
+"",
+"Grappling Hook:",
+"",
+"- Primary Fire Throws the hook, it only latches onto areas your HUD shows with a green O.",
+"- Alternate Fire Retrieves the hook so you can throw it again.",
+"- Once hooked, hold W to be drawn in. The farther away you are, the more force you are draw in with.",
+"- Swinging can be a good strategy if you do not have enough space to simply over-speed up.",
+"",
+"Crowbar:",
+"- Does not hurt other players, just a required item for some events.",
+"",
+"Polymer Shield:",
+"- Alternate Fire Toggles It.",
+"- Protects from turret shots.",
+"- It will only stay out while the weapon is out.",
+"- Some people say it's slow-moving, so sorry in advance."}
+ThiefHelpCategories["Events"] = {"Events are triggers placed into the map by the mapper",
+"that trigger actions in the map (like opening a door) when the user has",
+"the required items.",
+"If you press use on it and do nto have the required items, you will be told.",
+"If you use it and it has already been used this round, you will be told.",
+"If you use it and have the proper items it will activate."}
+ThiefHelpCategories["Advanced"] = {"Useful Tactics at the Thief:",
+"",
+"- Props you steal still give the Curator money until you sell them.",
+"- Learn the map. If you come in through a one-way entrance, be sure to have the tools to make an exit.",
+"- Your win/loss is based on the money your team in total has, so be a team player.",
+"- The above is true, but bragging rights for having the most money is always nice.",
+"- Dying is better than being arrested, So if the alarm is going off, and you know you won't make it,",
+"   stand in front of a turret. You may lose your stolen items, but you won't be withheld form the",
+"   game for 60 seconds.",
+"- In the event you are arrested, you spectate the Curator, so you can inform your friends of his plans!",
+"- There is no substitute for experience. There is no 'I-Win' item to buy.",
+"- The Curator gets 10% liquid for all art he has remaining at the end fo the round times the number of ",
+"   thieves there are. Take this into account before thinking you cannot lose.",
+"",
+"- Gamemode Thread: http://www.facepunch.com/showthread.php?t=821918",
+"- Gamemode Coding Competition Entry, Sept/Oct. 2009",
+"- By LevyBreak (And The Curator Spawn Menu by Find Me)"}
+
+function HelpMenu(deftab)
+	local ply = LocalPlayer()
+	if not ply.DHelp then
+		local sizeX = ScrW()/2
+		local sizeY = ScrH()/2
+		
+		ply.DHelp = vgui.Create("DFrame")
+		ply.DHelp:SetTitle("Help")
+		ply.DHelp:SetSize(sizeX,sizeY)
+		ply.DHelp:SetPos((ScrW()/2)-sizeX/2,(ScrH()/2)-sizeY/2)
+		ply.DHelp:MakePopup()
+		
+		local PropertySheet = vgui.Create( "DPropertySheet", ply.DHelp )
+		PropertySheet:SetPos( 5, 30 )
+		PropertySheet:SetSize( sizeX-10, sizeY-35 )
+ 
+		local SheetItemOne = vgui.Create( "DPanelList" )
+		SheetItemOne:SetSpacing(1)
+		SheetItemOne:SetAutoSize(false)
+		SheetItemOne:EnableVerticalScrollbar(true)
+		
+		for k,v in pairs(CuratorHelpCategories) do
+			local Subcategory = vgui.Create("DCollapsibleCategory")
+			Subcategory:SetLabel(k)
+			if k == "Basic" then
+				Subcategory:SetExpanded(1)
+			else
+				Subcategory:SetExpanded(0)
+			end
+			local SubList = vgui.Create("DPanelList")
+			SubList:SetAutoSize(true)
+			SubList:SetSpacing(2)
+			for kz,vz in ipairs(v) do
+				local Lbl = vgui.Create("DLabel")
+				Lbl:SetText(vz)
+				Lbl:SizeToContents()
+				SubList:AddItem(Lbl)
+			end
+			Subcategory:SetContents(SubList)
+			SheetItemOne:AddItem(Subcategory)
+		end
+
+		local SheetItemTwo = vgui.Create( "DPanelList" )
+		SheetItemTwo:SetSpacing(1)
+		SheetItemTwo:SetAutoSize(false)
+		SheetItemTwo:EnableVerticalScrollbar(true)
+		
+		for k,v in pairs(ThiefHelpCategories) do
+			local Subcategory = vgui.Create("DCollapsibleCategory")
+			Subcategory:SetLabel(k)
+			if k == "Basic" then
+				Subcategory:SetExpanded(1)
+			else
+				Subcategory:SetExpanded(0)
+			end
+			local SubList = vgui.Create("DPanelList")
+			SubList:SetAutoSize(true)
+			SubList:SetSpacing(2)
+			for kz,vz in ipairs(v) do
+				local Lbl = vgui.Create("DLabel")
+				Lbl:SetText(vz)
+				Lbl:SizeToContents()
+				SubList:AddItem(Lbl)
+			end
+			Subcategory:SetContents(SubList)
+			SheetItemTwo:AddItem(Subcategory)
+		end
+ 
+		if deftab and deftab == "Curator" then
+			PropertySheet:AddSheet( "Curator", SheetItemOne, "gui/silkicons/user", false, false, "Curator Help Information" )
+			PropertySheet:AddSheet( "Thieves", SheetItemTwo, "gui/silkicons/group", false, false, "Thief Help Information" )
+		else
+			PropertySheet:AddSheet( "Thieves", SheetItemTwo, "gui/silkicons/group", false, false, "Thief Help Information" )
+			PropertySheet:AddSheet( "Curator", SheetItemOne, "gui/silkicons/user", false, false, "Curator Help Information" )
+		end
+		
+		SheetItemOne:StretchToParent()
+		SheetItemTwo:StretchToParent()
+
+	else
+		ply.DHelp:Close()
+		ply.DHelp = nil
+	end
+end
+
 local Vec = FindMetaTable("Vector")
 
 function Vec:IsInLadder()
@@ -604,3 +977,38 @@ function Vec:IsPosInBounds(maxvals,offset)
 	end
 	return false
 end 
+
+-- Almost over 1000 lines of cl_init.lua!
+-- Maybe I can just comment in these last 30 lines?
+-- Is that possible?
+-- I mean, 30 lines of nothing by comments?
+-- I can try, I suppose.
+-- So, How to begin...
+-- I think I'll do some credits.
+-- Detailed ones.
+-- I thank:
+-- Find Me for the following:
+--  The Curator Spawn Menu
+--  The Thief Q Menu (Slightly Modified)
+--  The Server Half of the Round Timer System (Slightly Modified)
+-- Google, for icons and textures.
+-- Myself, for everything else.
+-- I know, it may seem impossible;
+-- But yes, this was only done in a month.
+-- Including Find Me's Part.
+-- Seriously, it was.
+-- And it's all either his or my code.
+-- It's all original code you haters!
+-- Aside from the redistributable datastream fix...
+-- I suppose i should thank Lexic (I think) for that.
+-- Not sure why I include it since I don't sue datastream anywhere.
+-- I gues it was incase I did, lol.
+-- I hope some of my convinience functions in this will be useful to some people.
+-- Really, I do.
+-- Being useful is fun. And nice.
+-- Did you know? I'm a Boy Scout. And only in high school
+-- (Algebra 2) to boot.
+-- That bezier crap took a long time for me to think
+-- up the first interation of.
+-- Haha! W00t! 1000 lines!
+-- So, about that EMP effect... cool, isn't it? Made the texture myself, too.

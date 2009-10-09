@@ -81,7 +81,7 @@ end
 ---------------------------------------------------------*/
 function SWEP:SecondaryAttack()
 	
-	self.Weapon:SetNextSecondaryFire(CurTime() + 2)
+	self.Weapon:SetNextSecondaryFire(CurTime() + 0.5)
 	
 	if (!SERVER) then return end
 	

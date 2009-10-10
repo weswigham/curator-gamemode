@@ -107,6 +107,8 @@ function SWEP:Holster()
 		self.ShieldEnt:Remove()
 		self.ShieldEnt = nil
 	end
+	
+	return true
 end
 
 function SWEP:DrawHUD()

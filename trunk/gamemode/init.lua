@@ -107,17 +107,17 @@ function GM:PlayerDeath(ply,inf,killr)
 	end
 	ply:SetNWInt("Detection",0)
 	
-	if pl ~= self.Curator then
-		pl:SetMoveType(MOVETYPE_WALK)
-		pl:SetNoDraw(false)
+	if ply ~= self.Curator then
+		ply:SetMoveType(MOVETYPE_WALK)
+		ply:SetNoDraw(false)
 	else
-		pl:SetMoveType(MOVETYPE_NOCLIP)
+		ply:SetMoveType(MOVETYPE_NOCLIP)
 		local tbl = ents.FindByClass("info_curator_start")
 		if tbl[1] then
 			self.Curator:SetPos(table.Random(tbl):GetPos())
 		end
-		pl:SetNoDraw(true)
-		pl:SetTeam(TEAM_CURATOR)
+		ply:SetNoDraw(true)
+		ply:SetTeam(TEAM_CURATOR)
 	end
 end
 

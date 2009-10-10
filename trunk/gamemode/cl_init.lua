@@ -575,7 +575,7 @@ concommand.Add("OpenEndGameWindow", function()
 		end
 		
 		do --Curator endgame stuff, the extra layer makes it indent better, and gives it it's own set of local variables.
-			draw.SimpleText("Curator Stats",tIDFont,ScrW()/2,BottomY-5-fnth,team.GetColor(curator:Team()),TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			draw.SimpleText("Curator Stats",tIDFont,ScrW()/2,BottomY-fnth,team.GetColor(curator:Team()),TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		
 			draw.SimpleText(curator:Nick(),tIDFont,BottomX+20,BottomY+20,team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 			draw.SimpleText("Money: $"..curator:GetNWInt("money"),tIDFont,BottomX+20,(BottomY+20)+(fnth+4),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
@@ -744,7 +744,7 @@ usermessage.Hook("OpenHelp",function(um)
 					draw.SimpleText(v,tIDFont,35,160+(fnth*k),RedCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 				end
 				
-				surface.DrawOutlinedRect((ScrW()/2)-150,0,150,30)
+				surface.DrawOutlinedRect((ScrW()/2)-75,0,150,30)
 				
 				for k,v in ipairs(ThiefStealingHelp) do
 					draw.SimpleText(v,tIDFont,ScrW()/2, 5+(fnth*k),RedCol,TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
@@ -1012,3 +1012,6 @@ end
 -- up the first interation of.
 -- Haha! W00t! 1000 lines!
 -- So, about that EMP effect... cool, isn't it? Made the texture myself, too.
+-- Well, it's going beyond 1000 lines thanks to additions to the help stuff.
+-- So now the "Haha! W00t! 1000 lines!" line isn't on line 1000.
+-- Didn't expect it to last that long.

@@ -9,6 +9,7 @@ function ThiefShop:PerformLayout()
 		self.BG.OldClose = self.BG.Close
 		self.BG.Close = function(BG) BG:OldClose() gui.EnableScreenClicker(false) end
 	end
+	self.BG:MakePopup()
 	
 	if not ValidEntity(self.TopList) then self.TopList = vgui.Create("DPanelList",self.BG) end
 	self.TopList:Clear()
@@ -18,7 +19,7 @@ function ThiefShop:PerformLayout()
 	self.TopList:EnableHorizontal(true)
 	
 	for k,v in pairs(Thief.GetItems()) do
-		local Icon = vgui.Create("SpawnIcon")
+		--[[local Icon = vgui.Create("SpawnIcon")
 		Icon:SetModel(v:GetModel())
 		Icon.Item = v
 		Icon.DoClick = function(Icon)
@@ -34,12 +35,16 @@ function ThiefShop:PerformLayout()
 			elseif enum == 107 then
 				Icon:DoClick()
 			end
-		end
+		end]]
+		local Icon = CreateThiefItemInformationWindow(v,true)
 		self.TopList:AddItem(Icon)
 	end
 	
+	self.TopList:EnableVerticalScrollbar(true)
+	self.TopList:EnableHorizontal(true)
 	self.TopList:InvalidateLayout()
 	
+	--[[
 	if not ValidEntity(self.BottomList) then self.BottomList = vgui.Create("DPanelList",self.BG) end
 	self.BottomList:Clear()
 	
@@ -66,9 +71,81 @@ function ThiefShop:PerformLayout()
 	end
 	
 	
-	self.BottomList:InvalidateLayout()
+	self.BottomList:InvalidateLayout()]]
+	
+	for i=1,5 do
+		local DFrame = vgui.Create("DPanel",self.BG)
+		DFrame:SetPos(((800-8)/5*(i-1))+10,((600-31)/2)+35)
+		DFrame:SetSize((DFrame:GetParent():GetWide()/5)-10,((600-31)/2)-40)
+		if LocalPlayer().MyItems and LocalPlayer().MyItems[i] then --Display
+			local k = i
+			local v = LocalPlayer().MyItems[i]
+			local Icon = vgui.Create("SpawnIcon",DFrame)
+			Icon:SetModel(v:GetModel())
+			Icon.Item = v
+			Icon.IIndex = k
+			Icon.DoClick = function(Icon)
+				Derma_Query("Are you sure you want to sell this "..Icon.Item:GetName().."?","Confirmation Dialogue","Yes",function() RunConsoleCommand("SellItem",Icon.IIndex) end,"No",function() end)
+			end
+			Icon.OnMousePressed = function(Icon,enum)
+				if enum == 108 then
+					CreateThiefItemInformationWindow(Icon.Item)
+				elseif enum == 107 then
+					Icon:DoClick()
+				end
+			end
+			Icon:SetPos((Icon:GetParent():GetWide()/2)-32,10)
+			
+			local Text = vgui.Create("DLabel",DFrame)
+			Text:SetFont("HudHintTextLarge")
+			if not Thief.GetItem(v:GetName()) then
+				Text:SetText("Worth: $"..(v:GetPrice()*2).."\n"..v:GetInformation())
+			else
+				Text:SetText("Worth: $"..v:GetPrice().."\n"..string.wrapwords(v:GetInformation(),"HudHintTextLarge",Text:GetParent():GetWide()-14))
+			end
+			Text:SetSize(Text:GetParent():GetWide()-10,Text:GetParent():GetTall()-76)
+			Text:SetPos(5,73)
+		else --blank
+		
+		end
+	end
 	
 	gui.EnableScreenClicker(true)
+end
+
+function table.GetKeysUpTo(tbl,key)
+	local output = {}
+	for k,v in ipairs(tbl) do
+		table.insert(output,v)
+		if k == key then
+			break
+		end
+	end
+	return output
+end
+
+function string.wrapwords(textz,font,x)
+	surface.SetFont(font)
+	local ret = ""
+	local len,height = surface.GetTextSize(textz)
+	if len > x then
+		local tbl = string.Explode(" ",textz)
+		for k,v in pairs(tbl) do
+			local toolong,_ = surface.GetTextSize(v)
+			local length,_ = surface.GetTextSize(table.concat(table.GetKeysUpTo(tbl,k)," "))
+			if not(toolong> x-5)  then 
+				if length > (x-5) then
+					table.insert(tbl,tonumber(k-1),"\n")
+				end
+			else
+				tbl[k] = " Word Too Long To Display\n"
+			end
+		end
+		ret = table.concat(tbl," ")
+	else
+		ret = textz
+	end
+	return ret
 end
 
 function ThiefShop:Init()
@@ -77,7 +154,7 @@ function ThiefShop:Init()
 	gui.EnableScreenClicker(true)
 end
 
-function CreateThiefItemInformationWindow(item)
+function CreateThiefItemInformationWindow(item,buy)
 
 	local BG = vgui.Create("DFrame")
 	BG:SetPos((ScrW()/2)-200,(ScrH()/2)-50)
@@ -88,8 +165,16 @@ function CreateThiefItemInformationWindow(item)
 	SIcon:SetModel(item:GetModel())
 	SIcon:SetPos(6,29)
 	SIcon.Item = item
-	SIcon.DoClick = function(Icon)
-
+	if buy then
+		BG:ShowCloseButton(false)
+		BG:SetDraggable(false)
+		SIcon.DoClick = function(Icon)
+			if LocalPlayer():GetNWInt("money") >= Icon.Item:GetPrice() then
+				Derma_Query("Are you sure you want to buy this "..Icon.Item:GetName().."?","Confirmation Dialogue","Yes",function() RunConsoleCommand("BuyItem",Icon.Item:GetName()) end,"No",function() end)
+			else
+				LocalPlayer():PrintMessage(HUD_PRINTCHAT,"You don't have enough money for that "..Icon.Item:GetName())
+			end
+		end
 	end
 	
 	local Cost = vgui.Create("DLabel", BG)
@@ -97,6 +182,8 @@ function CreateThiefItemInformationWindow(item)
 	Cost:SetPos(74,29)
 	Cost:SetText("Worth: $"..item:GetPrice().."\n"..item:GetInformation())
 	Cost:SizeToContents()
+	
+	return BG
 	
 end
 

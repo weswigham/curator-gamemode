@@ -14,5 +14,7 @@ function ENT:KeyValue(k,v)
 		self.CurRelayName = v
 	elseif k == "CuratorCost" then
 		self.CurRelayCost = v
+	elseif k == "CuratorText" then
+		self.CurTxt = v
 	end
 end 

@@ -106,6 +106,19 @@ function GM:PlayerDeath(ply,inf,killr)
 		ply:SendItems()
 	end
 	ply:SetNWInt("Detection",0)
+	
+	if pl ~= self.Curator then
+		pl:SetMoveType(MOVETYPE_WALK)
+		pl:SetNoDraw(false)
+	else
+		pl:SetMoveType(MOVETYPE_NOCLIP)
+		local tbl = ents.FindByClass("info_curator_start")
+		if tbl[1] then
+			self.Curator:SetPos(table.Random(tbl):GetPos())
+		end
+		pl:SetNoDraw(true)
+		pl:SetTeam(TEAM_CURATOR)
+	end
 end
 
 function GM:ArrestPlayer(ply)
@@ -145,6 +158,10 @@ function GM:PlayerSpawn( pl )
 		for k,v in pairs(pl.ItemList) do
 			if v.OnSpawn then v:OnSpawn(pl) end
 		end
+		if not pl:GetPData("hasbeenthief") then
+			pl:SetPData("hasbeenthief","yah")
+			SendUserMessage("OpenHelp",pl)
+		end
 	else
 		pl:SetMoveType(MOVETYPE_NOCLIP)
 		local tbl = ents.FindByClass("info_curator_start")
@@ -153,6 +170,10 @@ function GM:PlayerSpawn( pl )
 		end
 		pl:SetNoDraw(true)
 		pl:SetTeam(TEAM_CURATOR)
+		if not pl:GetPData("hasbeencurator") then
+			pl:SetPData("hasbeencurator","yah")
+			SendUserMessage("OpenHelp",pl)
+		end
 	end
 	
 	pl:SetNWInt("Detection",0)
@@ -246,6 +267,7 @@ function GM:PlayerInitialSpawn( ply )
 	for k,v in ipairs(ents.FindByClass("trigger_ladder")) do
 		SendUserMessage("RecieveLadder",ply,v:LocalToWorld(v:OBBMaxs()),v:LocalToWorld(v:OBBMins()))
 	end
+	
 end
 
 function GM:PlayerDisconnected( ply )
@@ -302,6 +324,7 @@ function GM:Think()
 		if not v:GetPos():IsInMuseum() then
 			v:SetNWInt("Detection",math.Clamp(v:GetNWInt("Detection")-2,0,1000))
 		end
+		if v == self.Curator then v:SetTeam(TEAM_CURATOR) end
 	end
 	if self.Curator then
 		local val1,val2,val3 = 0,0,0
@@ -522,14 +545,22 @@ end)
 
 hook.Add("RoundStarted","CuratorRoundStart",function() 
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do
-		v:Input("FireUser1",GetWorldEntity(),GetWorldEntity())
+		if v.StartRelayName then
+			for k,v in ipairs(ents.FindByName(v.StartRelayName)) do
+				v:Input("FireUser1",GetWorldEntity(),GetWorldEntity())
+			end
+		end
 	end
 	GAMEMODE:RoundBegin()
 end)
 
 hook.Add("GraceTime","CuratorGraceTime", function()
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do
-		v:Input("FireUser2",GetWorldEntity(),GetWorldEntity())
+		if v.EndRelayName then
+			for k,v in ipairs(ents.FindByName(v.EndRelayName)) do
+				v:Input("FireUser2",GetWorldEntity(),GetWorldEntity())
+			end
+		end
 	end
 	GAMEMODE:RoundEnd()
 end)

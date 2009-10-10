@@ -45,7 +45,7 @@ function Player:GiveStolenItem(item,entToRemoveOnSell)
 end
 
 function Player:SellItem(index)
-	if not self.ItemList[tonumber(index)] then self:ChatPrint("Wait, you don't have anything in that item slot...It's a DList Glitch, just ignore it.") return end
+	if not self.ItemList[tonumber(index)] then self:ChatPrint("Wait, you don't have anything in that item slot...Must be a transfer glitch. Try Opening Q and Closing it.") return end
 	
 	if Thief.GetItem(self.ItemList[tonumber(index)].Item:GetName()) then -- we don't know people glitching money, now do we?
 		self:SetNWInt("money",math.ceil(self:GetNWInt("money")+math.floor(self.ItemList[tonumber(index)].Item:GetPrice())))
@@ -64,7 +64,7 @@ function Player:SendItems()
 	for k,v in pairs(self.ItemList) do
 		SendUserMessage("RecieveItems",self,k,v.Item:GetName())
 	end
-	if self.ItemList == {} then
+	if (not self.ItemList) or (not self.ItemList[1]) or self.ItemList == {} then
 		SendUserMessage("RecieveItems",self,1,"Empty")
 	end
 end

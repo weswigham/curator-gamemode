@@ -60,7 +60,10 @@ local function KeyPressed(ply, code)
 							for kz,vz in pairs(ply:GetItems()) do
 								if string.lower(vz.Item:GetName()) == string.lower(va) then
 									if vz.Entity then vz.Entity:Remove() end
-									table.remove(ply.ItemList,kz)
+									if not string.find(vz.Item:GetName(),"Crowbar") then --So you always keep the crowbar even if its required for an event.
+										if vz.Item.OnRemove then vz.Item:OnRemove(ply) end
+										table.remove(ply.ItemList,kz)
+									end
 									break
 								end
 							end
@@ -135,7 +138,6 @@ end
 
 function GM:PlayerSpawn( pl )
 
-	self.BaseClass.PlayerSpawn( self, pl )
 	if pl ~= self.Curator then
 		pl:SetMoveType(MOVETYPE_WALK)
 		pl:SetNoDraw(false)
@@ -154,6 +156,7 @@ function GM:PlayerSpawn( pl )
 	end
 	
 	pl:SetNWInt("Detection",0)
+	self.BaseClass.PlayerSpawn( self, pl )
 end
 
 
@@ -343,6 +346,8 @@ function GM:RoundBegin()
 		v:KillSilent()
 		v:SetTeam(TEAM_THIEF)
 		v:SetNoDraw(false)
+		v.ItemList = {}
+		v:SendItems()
 	end
 	self.Curator = nil
 	self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)

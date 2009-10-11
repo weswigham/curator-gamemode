@@ -25,7 +25,7 @@ function ENT:Draw()
 		local longest = 0
 		for i=math.floor(numtra/-2)+2,math.floor(numtra/2)+2 do
 			local start = self:GetPos()+(self:GetAngles():Up()*i*DistInc)
-			tr[i] = util.QuickTraceHull(start,self:GetAngles():Right()*1000,self:OBBMins()/numtra,self:OBBMaxs()/numtra,{self},MASK_SOLID_BRUSHONLY) --convoluted shit here. All for the sake of resolution.
+			tr[i] = util.QuickTraceHull(start,self:GetAngles():Right()*500,self:OBBMins()/numtra,self:OBBMaxs()/numtra,{self},MASK_SOLID_BRUSHONLY) --convoluted shit here. All for the sake of resolution.
 			render.DrawBeam( start, tr[i].HitPos, 5, 0, 0, Red )
 			debugoverlay.Line( start, tr[i].HitPos)
 			debugoverlay.Cross(start,20)

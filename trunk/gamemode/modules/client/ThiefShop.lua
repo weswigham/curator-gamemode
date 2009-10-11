@@ -168,11 +168,11 @@ function CreateThiefItemInformationWindow(item,buy)
 	if buy then
 		BG:ShowCloseButton(false)
 		BG:SetDraggable(false)
-		SIcon.DoClick = function(Icon)
-			if LocalPlayer():GetNWInt("money") >= Icon.Item:GetPrice() then
-				Derma_Query("Are you sure you want to buy this "..Icon.Item:GetName().."?","Confirmation Dialogue","Yes",function() RunConsoleCommand("BuyItem",Icon.Item:GetName()) end,"No",function() end)
+		SIcon.DoClick = function(SIcon)
+			if SIcon.Item and LocalPlayer():GetNWInt("money") >= SIcon.Item:GetPrice() then
+				Derma_Query("Are you sure you want to buy this "..SIcon.Item:GetName().."?","Confirmation Dialogue","Yes",function() RunConsoleCommand("BuyItem",SIcon.Item:GetName()) end,"No",function() end)
 			else
-				LocalPlayer():PrintMessage(HUD_PRINTCHAT,"You don't have enough money for that "..Icon.Item:GetName())
+				LocalPlayer():PrintMessage(HUD_PRINTCHAT,"You don't have enough money for that "..SIcon.Item:GetName())
 			end
 		end
 	end

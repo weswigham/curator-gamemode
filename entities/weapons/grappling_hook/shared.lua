@@ -27,6 +27,8 @@ SWEP.Force = 15000
 
 SWEP.Amt = 120
 
+SWEP.UpForce = 50
+
 function SWEP:Initialize()
 	if ( SERVER ) then
        self:SetWeaponHoldType( self.HoldType )
@@ -64,7 +66,7 @@ function SWEP:PrimaryAttack()
 			self.Hook:SetPos(ply:GetShootPos())
 			self.Hook:Spawn()
 			self.Hook:GetPhysicsObject():ApplyForceCenter(ply:GetAimVector()*self.Force)
-			constraint.NoCollide()
+			self.Hook.Fading = true
 			
 			self.RopeKey = ents.Create( "keyframe_rope" )
 			self.RopeKey:SetKeyValue( "MoveSpeed", "64" )
@@ -127,6 +129,25 @@ function SWEP:SecondaryAttack()
 	
 end
 
+function SWEP:Holster()
+
+	if (!SERVER) then return end
+	if self.Hook and self.Hook:IsValid() then
+		self.Hook:Remove()
+	end
+	self.Hook =  nil
+	if self.RopeMove and self.RopeMove:IsValid() then
+		self.RopeMove:Remove()
+	end
+	self.RopeMove = nil
+	if self.RopeKey and self.RopeKey:IsValid() then
+		self.RopeKey:Remove()
+	end
+	self.RopeKey = nil
+	self.CurSlack = -1500
+	
+	return true
+end
 
 /*---------------------------------------------------------
    Name: ShouldDropOnDie
@@ -154,26 +175,23 @@ end
 function SWEP:Think()
 	if (SERVER) and self.Hook and self.Hook.HookedOn then
 		local ply = self.Owner
-		if ply:KeyDown(IN_FORWARD) then
+		if ply:KeyDown(IN_FORWARD | IN_SPEED) then
+			if ply:IsOnGround() then ply:ConCommand("+jump") timer.Simple(0.1,ply.ConCommand,ply,"-jump") end
 			local DirNorm = (self.Hook:GetPos()-ply:GetShootPos()):GetNormal()
 			local RLength = self.Hook:GetPos():Distance(ply:GetShootPos())
-			local DirNormMag = DirNorm:DotProduct(ply:GetVelocity())
+			--local DirNormMag = DirNorm:DotProduct(ply:GetVelocity())
 			local Force = ply:GetVelocity()
-			if ( DirNormMag < 0 ) then
-				Force = DirNorm * ( ( DirNormMag * -1.25 ) + ( RLength - self.Amt ) )
-			else
-				Force = DirNorm * ( RLength - self.Amt )
-			end
+			--if ( DirNormMag < 0 ) then
+				--Force = DirNorm * ( ( DirNormMag * -0.75 ) -( self.UpForce - self.Amt ) )
+			--else
+				Force = DirNorm * -( self.UpForce - self.Amt )
+			--end
 			self.CurSlack = self.CurSlack - self.Amt
 			self.RopeKey:SetKeyValue("Slack",tostring(RLength - self.Amt))
 			self.RopeMove:SetKeyValue("Slack",tostring(RLength - self.Amt))
 			ply:SetVelocity(Force)
-		elseif ply:KeyDown(IN_BACK) then
-			self.CurSlack = self.CurSlack + self.Amt
-			self.RopeKey:SetKeyValue("Slack",tostring(self.CurSlack))
-			self.RopeMove:SetKeyValue("Slack",tostring(self.CurSlack))
 		end
 	end
-	self:NextThink(CurTime()+0.25)
+	self:NextThink(CurTime()+0.1)
 	return true
 end

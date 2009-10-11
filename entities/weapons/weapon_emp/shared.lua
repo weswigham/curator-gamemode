@@ -60,35 +60,49 @@ function SWEP:PrimaryAttack()
 		
 		if (!SERVER) then return end
 		
-		--GAMEMODE:SetPlayerAnimation( self.Owner, PLAYER_ATTACK1 )
-		
-		self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
-		
-		for k,v in ipairs(ents.FindInSphere(self:GetPos(),self.RangeRadius)) do
-			if v.TemporarilyDisable then
-				v:TemporarilyDisable(self.Duration)
-				local efct = EffectData()
-				efct:SetEntity(v)
-				efct:SetOrigin(v:GetPos())
-				efct:SetStart(self.Owner:GetShootPos())
-				efct:SetScale(1)
-				efct:SetMagnitude(5)
-				util.Effect("TeslaZap",efct)
-			end
-		end
-	
-		local efct = EffectData()
-		efct:SetOrigin(self.Owner:GetShootPos())
-		efct:SetMagnitude(2)
-		efct:SetScale(self.RangeRadius)
-		util.Effect("emp_blast",efct)
-
-		self:EmitSound(PlySnd)
+		self.Weapon:SendWeaponAnim(ACT_VM_THROW)
 		
 		local ply = self.Owner
+		local nade = ents.Create("prop_physics")
+		nade:SetPos(ply:GetShootPos())
+		nade:SetModel("models/Weapons/w_bugbait.mdl")
+		nade:Spawn()
+		nade:Activate()
+		local phys = nade:GetPhysicsObject()
+
+		phys:ApplyForceCenter(ply:GetAimVector()*3000)
+		phys:SetDamping(phys:GetDamping()/2)
+
+		local radius = self.RangeRadius
+		timer.Simple(2, function() 
+			if nade and ValidEntity(nade) then
+				for k,v in ipairs(ents.FindInSphere(nade:GetPos(),radius)) do
+					if v.TemporarilyDisable then
+						v:TemporarilyDisable(self.Duration)
+						local efct = EffectData()
+						efct:SetEntity(v)
+						efct:SetOrigin(v:GetPos())
+						efct:SetStart(nade:GetPos())
+						efct:SetScale(1)
+						efct:SetMagnitude(5)
+						util.Effect("TeslaZap",efct)
+					end
+				end
+	
+				nade:EmitSound(PlySnd)
+				
+				local efct = EffectData()
+				efct:SetMagnitude(2)
+				efct:SetScale(radius)
+				efct:SetOrigin(nade:GetPos())
+				util.Effect("emp_blast",efct)
+				
+				nade:Remove()
+			end
+		end)
 		
+		timer.Simple(1,function()
 		local idx = nil
-		print(ply.ItemList)
 		for k,v in ipairs(ply.ItemList) do
 			if v.Item and string.find(v.Item:GetName(),"EMP") then
 				if v.Entity then v.Entity:Remove() end
@@ -97,7 +111,7 @@ function SWEP:PrimaryAttack()
 				break				
 			end
 		end
-		print(ply.ItemList)
+
 		if idx and idx ~= nil then
 			table.remove(ply.ItemList,idx)
 			ply:SendItems()
@@ -105,6 +119,7 @@ function SWEP:PrimaryAttack()
 			print("Lolwhat? No item?")
 			ply:StripWeapon("weapon_emp")
 		end
+		end)
 end
 
 /*---------------------------------------------------------
@@ -113,10 +128,54 @@ end
 function SWEP:SecondaryAttack()
 	
 	self.Weapon:SetNextSecondaryFire(CurTime() + 2)
+		
+		if (!SERVER) then return end
+		
+		--GAMEMODE:SetPlayerAnimation( self.Owner, PLAYER_ATTACK1 )
+		
+		local ply = self.Owner
+		
+		self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
+		
+		for k,v in ipairs(ents.FindInSphere(ply:GetShootPos(),self.RangeRadius)) do
+			if v.TemporarilyDisable then
+				v:TemporarilyDisable(self.Duration)
+				local efct = EffectData()
+				efct:SetEntity(v)
+				efct:SetOrigin(v:GetPos())
+				efct:SetStart(ply:GetShootPos())
+				efct:SetScale(1)
+				efct:SetMagnitude(5)
+				util.Effect("TeslaZap",efct)
+			end
+		end
 	
-	if (!SERVER) then return end
-	
-	
+		local efct = EffectData()
+		efct:SetMagnitude(2)
+		efct:SetScale(self.RangeRadius)
+		efct:SetOrigin(ply:GetShootPos())
+		util.Effect("emp_blast",efct)
+
+		ply:EmitSound(PlySnd)
+		
+		
+		local idx = nil
+		for k,v in ipairs(ply.ItemList) do
+			if v.Item and string.find(v.Item:GetName(),"EMP") then
+				if v.Entity then v.Entity:Remove() end
+				v.Item:OnRemove(ply)
+				idx = k
+				break				
+			end
+		end
+
+		if idx and idx ~= nil then
+			table.remove(ply.ItemList,idx)
+			ply:SendItems()
+		else
+			print("Lolwhat? No item?")
+			ply:StripWeapon("weapon_emp")
+		end
 end
 
 

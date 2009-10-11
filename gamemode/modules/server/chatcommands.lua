@@ -67,6 +67,28 @@ end
 RegisterChatCmd(CHATCMD.Command,CHATCMD)
 
 /*---------------------------------------------------------
+  bug
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "!sb"
+CHATCMD.Desc = "- Submit a bug to the server"
+CHATCMD.Usage = "(description of bug)"
+function CHATCMD:Run( ply, ... )
+	if arg[1] then
+		local text = table.concat(arg," ")
+		text = os.date().." - "..text
+		if not file.Exists("CuratorBugs\\"..ply:Nick()..".txt") then
+			file.Write("CuratorBugs\\"..ply:Nick()..".txt",text)
+		else
+			text = text.."\n\n-------------------------------------------------------------------------------\n\n"..file.Read("CuratorBugs\\"..ply:Nick()..".txt")
+			file.Write("CuratorBugs\\"..ply:Nick()..".txt",text)
+		end
+	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
   RunLua
 ---------------------------------------------------------*/
 local CHATCMD = {}
@@ -99,12 +121,12 @@ function CHATCMD:Run( ply, ... )
 	local name = table.concat( {...}, " " )
 	local found;
 	for k,v in ipairs(player.GetAll()) do
-		if string.find(v:Nick(),name) then
+		if string.find(string.lower(v:Nick()),string.lower(name)) then
 			found = v
 			break
 		end
 	end
-	if not GAMEMODE.ActiveVoting then
+	if not GAMEMODE.ActiveVoting and found then
 		local OnPass = function() 
 			if found and found:IsValid() then
 				PrintMessage( HUD_PRINTTALK,"The vote to kick"..found:Nick().." has passed!")
@@ -115,6 +137,31 @@ function CHATCMD:Run( ply, ... )
 			PrintMessage( HUD_PRINTTALK,"The vote to kick"..found:Nick().." has failed!")
 		end
 		GAMEMODE:SetupVote("Kicking "..found:Nick(), 30, 1, OnPass, OnFail) --Name, Duration, OnPass, OnFail
+	elseif not found then
+		ply:PrintMessage( HUD_PRINTTALK, "Player "..name.." could not be found.")
+	else
+		ply:PrintMessage( HUD_PRINTTALK, "A vote is already in progress!")
+	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+vote kick
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "!votenewround"
+CHATCMD.Desc = "- Starts a vote start a new round"
+function CHATCMD:Run( ply, ... )
+	if not GAMEMODE.ActiveVoting then
+		local OnPass = function() 
+			PrintMessage( HUD_PRINTTALK,"The vote to start a new round has passed!")
+			GAMEMODE.Curator = nil
+		end
+		local OnFail = function() 
+			PrintMessage( HUD_PRINTTALK,"The vote to start a new round has failed!")
+		end
+		GAMEMODE:SetupVote("Starting a new round", 30, 1, OnPass, OnFail) --Name, Duration, OnPass, OnFail
 	else
 		ply:PrintMessage( HUD_PRINTTALK, "A vote is already in progress!")
 	end

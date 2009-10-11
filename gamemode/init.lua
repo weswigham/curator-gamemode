@@ -127,8 +127,20 @@ function GM:ArrestPlayer(ply)
 	for k,v in pairs(ply.ItemList) do
 		if v.Entity and v.Entity:IsValid() then v.Entity:StopFade() end
 	end
-	ply.ItemList = {}
-	ply:SendItems()
+	if ply ~= self.Curator and ply.ItemList then
+		local ToRemove = {}
+		for k,v in pairs(ply.ItemList) do
+			if v.Entity then
+				ply:ChatPrint("The "..v.Item:GetName().." you stole has been removed from your inventory because of death!")
+				v.Entity:StopFade()
+				table.insert(ToRemove,k)
+			end
+		end
+		for k,v in ipairs(ToRemove) do
+			ply.ItemList[v] = nil
+		end
+		ply:SendItems()
+	end
 	ply:SetNWInt("money",math.floor(math.Clamp(ply:GetNWInt("money")*0.9,0,9999999)))
 	ply:KillSilent()
 	ply:Spectate(OBS_MODE_IN_EYE)
@@ -264,9 +276,11 @@ function GM:PlayerInitialSpawn( ply )
 	SelectionWeights[ply] = 1
 	ply.ItemList = {}
 
+	timer.Simple(5,function()
 	for k,v in ipairs(ents.FindByClass("trigger_ladder")) do
 		SendUserMessage("RecieveLadder",ply,v:LocalToWorld(v:OBBMaxs()),v:LocalToWorld(v:OBBMins()))
 	end
+	end)
 	
 end
 
@@ -279,13 +293,13 @@ function GM:TriggerAlarm(sndPos)
 		self.Alarming = true
 		WorldSound("Trainyard.distantsiren",sndPos,165,100)
 		SendUserMessage("StartAlarmCountdown")
-		timer.Simple(10,function() 
+		timer.Simple(25,function() 
 			self.Alarming = false
 			for k,v in ipairs(player.GetAll()) do
 				if v:GetPos():IsInMuseum() and v ~= self.Curator then
 					GAMEMODE:ArrestPlayer(v)
 					SendUserMessage("YouBeenArrested",v)
-					timer.Simple(60,function() GAMEMODE:UnArrestPlayer(v) SendUserMessage("YouveBeenReleased",v) end)
+					timer.Simple(45,function() GAMEMODE:UnArrestPlayer(v) SendUserMessage("YouveBeenReleased",v) end)
 				end
 			end
 		end)

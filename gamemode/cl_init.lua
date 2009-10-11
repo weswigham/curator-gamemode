@@ -231,7 +231,7 @@ end
 
 usermessage.Hook("StartAlarmCountdown",function(um)
 	local AlarmTimestamp = RoundTimer.GetCurrentTime()
-	local EndTime = AlarmTimestamp - 10
+	local EndTime = AlarmTimestamp - 25
 	hook.Add("HUDPaint","AlarmWarning",function()
 		local Time = string.ToMinutesSeconds(math.Clamp(RoundTimer.GetCurrentTime()-EndTime,0,120))
 		surface.SetFont(Font)
@@ -247,14 +247,14 @@ usermessage.Hook("StartAlarmCountdown",function(um)
 		draw.SimpleText(Text,Font,(ScrW()/2)-(ox/2),ScrH()-(offy+5)-oy-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
 		draw.SimpleText(Text2,Font,(ScrW()/2)-(ox2/2),ScrH()-(offy+5)-oy2-10,HPCol,TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
 	end)
-	timer.Simple(10,function() 
+	timer.Simple(25,function() 
 		hook.Remove("HUDPaint","AlarmWarning")
 	end)
 end)
 
 usermessage.Hook("YouBeenArrested",function(um)
 	local ArrestTimestamp = RoundTimer.GetCurrentTime()
-	local EndTime = ArrestTimestamp - 60
+	local EndTime = ArrestTimestamp - 45
 	hook.Add("HUDPaint","Arrested",function()
 		local Time = string.ToMinutesSeconds(math.Clamp(RoundTimer.GetCurrentTime()-EndTime,0,120))
 		surface.SetFont(Font)
@@ -578,9 +578,9 @@ concommand.Add("OpenEndGameWindow", function()
 			draw.SimpleText("Curator Stats",tIDFont,ScrW()/2,BottomY-fnth,team.GetColor(curator:Team()),TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		
 			draw.SimpleText(curator:Nick(),tIDFont,BottomX+20,BottomY+20,team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-			draw.SimpleText("Money: $"..curator:GetNWInt("money"),tIDFont,BottomX+20,(BottomY+20)+(fnth+4),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-			draw.SimpleText("Liquid: $"..curator:GetNWInt("liquid"),tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*2),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-			draw.SimpleText("Total: $"..(curator:GetNWInt("liquid")+curator:GetNWInt("money")),tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*3),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			draw.SimpleText("Money: $"..math.Round(curator:GetNWInt("money")),tIDFont,BottomX+20,(BottomY+20)+(fnth+4),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			draw.SimpleText("Liquid: $"..math.Round(curator:GetNWInt("liquid")),tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*2),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			draw.SimpleText("Total: $"..math.Round(curator:GetNWInt("liquid")+curator:GetNWInt("money")),tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*3),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 			
 			draw.SimpleText("Ammount of Art at Endgame: "..#ents.FindByClass("curator_art"),tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*5),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 			
@@ -607,6 +607,10 @@ concommand.Add("CloseEndGameWindow", function()
     if ValidEntity(ply.Endgame) then
         ply.Endgame:Remove()
     end
+	hook.Remove("HUDPaint","Stealing")
+	hook.Remove("HUDPaint","Freed")
+	hook.Remove("HUDPaint","Arrested")
+	hook.Remove("HUDPaint","AlarmWarning")
 end)
 
 usermessage.Hook("RecieveLadder",function(um)
@@ -840,7 +844,7 @@ ThiefHelpCategories["Weapon List"] = {"Pocket EMP:",
 "",
 "- Primary Fire Throws the hook, it only latches onto areas your HUD shows with a green O.",
 "- Alternate Fire Retrieves the hook so you can throw it again.",
-"- Once hooked, hold W to be drawn in. The farther away you are, the more force you are draw in with.",
+"- Once hooked, hold Shift-W to be drawn in. The farther away you are, the more force you are draw in with.",
 "- Swinging can be a good strategy if you do not have enough space to simply over-speed up.",
 "",
 "Crowbar:",
@@ -959,6 +963,15 @@ function HelpMenu(deftab)
 		ply.DHelp = nil
 	end
 end
+
+local function FadingShouldCollide(e1,e2)
+	if (e1:IsPlayer() or e2:IsPlayer()) and (string.find(e1:GetClass(),"hook") or string.find(e2:GetClass(),"hook")) then
+		return false
+	else
+		return true
+	end
+end
+hook.Add("ShouldCollide","CuratorFadingShouldCollide",FadingShouldCollide)
 
 local Vec = FindMetaTable("Vector")
 

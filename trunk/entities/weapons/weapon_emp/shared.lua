@@ -77,7 +77,7 @@ function SWEP:PrimaryAttack()
 		timer.Simple(2, function() 
 			if nade and ValidEntity(nade) then
 				for k,v in ipairs(ents.FindInSphere(nade:GetPos(),radius)) do
-					if v.TemporarilyDisable then
+					if v.TemporarilyDisable and not v.Hardened then
 						v:TemporarilyDisable(self.Duration)
 						local efct = EffectData()
 						efct:SetEntity(v)
@@ -106,7 +106,6 @@ function SWEP:PrimaryAttack()
 		for k,v in ipairs(ply.ItemList) do
 			if v.Item and string.find(v.Item:GetName(),"EMP") then
 				if v.Entity then v.Entity:Remove() end
-				v.Item:OnRemove(ply)
 				idx = k
 				break				
 			end
@@ -114,7 +113,12 @@ function SWEP:PrimaryAttack()
 
 		if idx and idx ~= nil then
 			table.remove(ply.ItemList,idx)
-			ply:SendItems()
+			if not ply:HasItems({"Pocket EMP"}) then
+				ply:StripWeapon("weapon_emp")
+				ply:SendItems()
+			else
+				ply:SendItems()
+			end
 		else
 			print("Lolwhat? No item?")
 			ply:StripWeapon("weapon_emp")
@@ -138,7 +142,7 @@ function SWEP:SecondaryAttack()
 		self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
 		
 		for k,v in ipairs(ents.FindInSphere(ply:GetShootPos(),self.RangeRadius)) do
-			if v.TemporarilyDisable then
+			if v.TemporarilyDisable and not v.Hardened then
 				v:TemporarilyDisable(self.Duration)
 				local efct = EffectData()
 				efct:SetEntity(v)
@@ -163,7 +167,6 @@ function SWEP:SecondaryAttack()
 		for k,v in ipairs(ply.ItemList) do
 			if v.Item and string.find(v.Item:GetName(),"EMP") then
 				if v.Entity then v.Entity:Remove() end
-				v.Item:OnRemove(ply)
 				idx = k
 				break				
 			end
@@ -171,7 +174,12 @@ function SWEP:SecondaryAttack()
 
 		if idx and idx ~= nil then
 			table.remove(ply.ItemList,idx)
-			ply:SendItems()
+			if not ply:HasItems({"Pocket EMP"}) then
+				ply:StripWeapon("weapon_emp")
+				ply:SendItems()
+			else
+				ply:SendItems()
+			end
 		else
 			print("Lolwhat? No item?")
 			ply:StripWeapon("weapon_emp")

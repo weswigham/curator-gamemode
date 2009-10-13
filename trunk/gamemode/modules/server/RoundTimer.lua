@@ -27,6 +27,7 @@ function RoundTimer.SlowThink()
 	if RoundTimer.CurrentTime > 0 then
 		RoundTimer.CurrentTime = RoundTimer.CurrentTime - 1
 		RoundTimer.InformClient()
+		GAMEMODE:CalledPerSecond()
 		if math.fmod(RoundTimer.CurrentTime,60) == 0 then
 			GAMEMODE:Payday()
 		end
@@ -35,7 +36,6 @@ function RoundTimer.SlowThink()
 			RoundTimer.EndRound()
 		else
 			RoundTimer.StartRound()
-			GAMEMODE:ResetMap()
 		end
 	end
 end

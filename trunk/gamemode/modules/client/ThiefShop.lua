@@ -38,6 +38,7 @@ function ThiefShop:PerformLayout()
 		end]]
 		local Icon = CreateThiefItemInformationWindow(v,true)
 		self.TopList:AddItem(Icon)
+		Icon:SetSize(800-18,Icon:GetTall())
 	end
 	
 	self.TopList:EnableVerticalScrollbar(true)

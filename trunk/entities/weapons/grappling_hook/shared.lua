@@ -2,7 +2,7 @@
 SWEP.Author			= "Levybreak"
 SWEP.Contact		= "Facepunch"
 SWEP.Purpose		= "Grapple with it. To climb up the walls of building at specified points."
-SWEP.Instructions	= "Left click to throw out at hook onto a green O area. Right click to remove it. When hooked, hold forward to move up it."
+SWEP.Instructions	= "Left click to throw out at hook onto a green O area. Right click to remove it. When hooked, hold Shift-forward to move up it. Shift-Back to move down it. Use to hop up once you're near the hook."
 
 SWEP.Spawnable			= false
 SWEP.AdminSpawnable		= false
@@ -23,16 +23,16 @@ SWEP.Secondary.Ammo			= "none"
 
 SWEP.HookModel = "models/props_junk/meathook001a.mdl"
 
-SWEP.Force = 15000
+SWEP.Force = 20000
 
 SWEP.Amt = 120
 
-SWEP.UpForce = 50
+SWEP.UpForce = 10
 
 function SWEP:Initialize()
 	if ( SERVER ) then
        self:SetWeaponHoldType( self.HoldType )
-	   self.CurSlack = -1500
+	   self.CurSlack = -3500
 	else
 
 	end
@@ -125,7 +125,7 @@ function SWEP:SecondaryAttack()
 		self.RopeKey:Remove()
 	end
 	self.RopeKey = nil
-	self.CurSlack = -1500
+	self.CurSlack = -3500
 	
 end
 
@@ -144,7 +144,7 @@ function SWEP:Holster()
 		self.RopeKey:Remove()
 	end
 	self.RopeKey = nil
-	self.CurSlack = -1500
+	self.CurSlack = -3500
 	
 	return true
 end
@@ -172,26 +172,52 @@ function SWEP:DrawHUD()
 	end
 end
 
+local Gravity = Vector(0,0,-9.8) --acceleration due to gravity pl0x?
+local UpPowuh = Vector(0,0,375)
+
 function SWEP:Think()
 	if (SERVER) and self.Hook and self.Hook.HookedOn then
 		local ply = self.Owner
-		if ply:KeyDown(IN_FORWARD | IN_SPEED) then
+		if ply:KeyDown(IN_FORWARD) and ply:KeyDown(IN_SPEED) and ply:GetShootPos().z < self.Hook:GetPos().z then
 			if ply:IsOnGround() then ply:ConCommand("+jump") timer.Simple(0.1,ply.ConCommand,ply,"-jump") end
 			local DirNorm = (self.Hook:GetPos()-ply:GetShootPos()):GetNormal()
 			local RLength = self.Hook:GetPos():Distance(ply:GetShootPos())
-			--local DirNormMag = DirNorm:DotProduct(ply:GetVelocity())
 			local Force = ply:GetVelocity()
-			--if ( DirNormMag < 0 ) then
-				--Force = DirNorm * ( ( DirNormMag * -0.75 ) -( self.UpForce - self.Amt ) )
-			--else
-				Force = DirNorm * -( self.UpForce - self.Amt )
-			--end
+				Force = DirNorm * self.UpForce
 			self.CurSlack = self.CurSlack - self.Amt
 			self.RopeKey:SetKeyValue("Slack",tostring(RLength - self.Amt))
 			self.RopeMove:SetKeyValue("Slack",tostring(RLength - self.Amt))
+			ply:SetVelocity((ply:GetVelocity()*-1))
 			ply:SetVelocity(Force)
+		elseif ply:KeyDown(IN_BACK) and ply:KeyDown(IN_SPEED) and ply:GetShootPos().z < self.Hook:GetPos().z then 
+			if ply:IsOnGround() then ply:ConCommand("+jump") timer.Simple(0.1,ply.ConCommand,ply,"-jump") end
+			local DirNorm = (self.Hook:GetPos()-ply:GetShootPos()):GetNormal()
+			local RLength = self.Hook:GetPos():Distance(ply:GetShootPos())
+			local Force = ply:GetVelocity()
+				Force = DirNorm * -self.UpForce
+			self.CurSlack = self.CurSlack + self.Amt
+			self.RopeKey:SetKeyValue("Slack",tostring(RLength + self.Amt))
+			self.RopeMove:SetKeyValue("Slack",tostring(RLength + self.Amt))
+			ply:SetVelocity((ply:GetVelocity()*-1))
+			ply:SetVelocity(Force+Gravity)
+		elseif (not ply:IsOnGround()) and ply:GetShootPos().z - self.Hook:GetPos().z < 4 and ply:GetShootPos().z - self.Hook:GetPos().z > -4 then --we're at the hook, just stop. srsly.
+			ply:SetVelocity((ply:GetVelocity()*-1))
+		else
+			if not ply:IsOnGround() then
+				local RLength = self.Hook:GetPos():Distance(ply:GetShootPos())
+				local DirNorm = (self.Hook:GetPos()-ply:GetShootPos())
+				local Wat = (Gravity:GetNormal()*RLength)
+				
+				ply:SetVelocity((ply:GetVelocity()*-1))
+				ply:SetVelocity(DirNorm+Wat)
+			end
+		end
+		if ply:KeyDown(IN_USE) and ply:GetShootPos().z < self.Hook:GetPos().z then
+			ply:SetVelocity((ply:GetVelocity()*-1))
+			ply:SetVelocity(UpPowuh)
+			self:SecondaryAttack()
 		end
 	end
-	self:NextThink(CurTime()+0.1)
+	self:NextThink(CurTime())
 	return true
 end

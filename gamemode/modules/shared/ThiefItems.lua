@@ -62,7 +62,7 @@ nil,
 "models/props_c17/FurnitureDrawer001a_Shard01.mdl"))
 
 Thief.AddItem(GetNewItemObject("Crowbar",
-"Beats shit down, maaan.", 
+"Break open vents and windows!", 
 750, 
 -1, 
 0,
@@ -72,7 +72,7 @@ Thief.MakeWeaponFunc("weapon_crowbar"),
 Thief.MakeDestroyFunc("weapon_crowbar"), 
 nil, 
 "models/Weapons/w_crowbar.mdl"))
-
+--[[
 Thief.AddItem(GetNewItemObject("Rope",
 "Helps ya in.", 
 250, 
@@ -83,11 +83,11 @@ Thief.AddItem(GetNewItemObject("Rope",
 nil,
 nil, 
 nil, 
-"models/props_c17/Frame002a.mdl"))
+"models/props_c17/Frame002a.mdl"))]]
 
 Thief.AddItem(GetNewItemObject("Explosive",
-"Opens large, reinforced locked doors.", 
-1250, 
+"Opens large, reinforced, locked doors. Permanant-like.", 
+1000, 
 -1, 
 0,
 0, 
@@ -98,7 +98,7 @@ nil,
 "models/Combine_Helicopter/helicopter_bomb01.mdl"))
 
 Thief.AddItem(GetNewItemObject("Pocket EMP",
-"Single Use only EMP. Range = 30ft", 
+"Single Use only EMP. Range is 30 yards.", 
 1250, 
 -1, 
 0,
@@ -110,7 +110,7 @@ nil,
 "models/Weapons/w_bugbait.mdl"))
 
 Thief.AddItem(GetNewItemObject("Grappling Hook",
-"W00t, A Grappling Hook!", 
+"A Grappling Hook! Perhaps we can sneak up the back wall...", 
 750, 
 -1, 
 0,

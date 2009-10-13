@@ -39,6 +39,8 @@ function Enthusist.MakeStandardSpawnFunc(class)
 		ent:Spawn()
         AccessorFunc(ent,"t_pOwner","Player")
         ent:SetPlayer(ply)
+		
+		return ent
 	end
 	return func
 end

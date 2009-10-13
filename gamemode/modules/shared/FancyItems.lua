@@ -39,6 +39,8 @@ function Fancy.MakeStandardSpawnFunc(class)
 		ent:Spawn()
         AccessorFunc(ent,"t_pOwner","Player")
         ent:SetPlayer(ply)
+		
+		return ent
 	end
 	return func
 end
@@ -91,11 +93,11 @@ Fancy.MakeStandardArtCheckFunc("Horse Statue"),
 
 Fancy.AddItem(GetNewItemObject("The Unknown One",
 "A very mysterious statue.", 
-4500, 
+3000, 
 2, 
 2,
 8, 
-16, 
+18, 
 Fancy.MakeStandardSpawnFunc("curator_art"),
 nil, 
 Fancy.MakeStandardArtCheckFunc("The Unknown One"), 
@@ -103,11 +105,11 @@ Fancy.MakeStandardArtCheckFunc("The Unknown One"),
 
 Fancy.AddItem(GetNewItemObject("The Holy Cross",
 "A very religious statue.", 
-4000, 
+2250, 
 3, 
 4,
 6, 
-10, 
+14, 
 Fancy.MakeStandardSpawnFunc("curator_art"),
 nil, 
 Fancy.MakeStandardArtCheckFunc("The Holy Cross"), 

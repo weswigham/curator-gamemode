@@ -35,8 +35,11 @@ function Security.MakeStandardSpawnFunc(class)
 		ent.IType = "Security"
 		ent:SetModel(item:GetModel())
 		ent:Spawn()
+		ent.Fading = (class ~= "curator_pressureplate")
         AccessorFunc(ent,"t_pOwner","Player")
         ent:SetPlayer(ply)
+		
+		return ent
 	end
 	return func
 end
@@ -101,11 +104,19 @@ Security.MakeStandardLimitCheckFunc("curator_laser_grid"),
 Security.AddItem(GetNewItemObject("Turret",
 "A deadly turret.",
 4500,
-2,
+1,
 -5,
 -3,
 -1,
 Security.MakeStandardSpawnFunc("curator_turret"),
 nil,
-Security.MakeStandardLimitCheckFunc("curator_turret"),
+function(item) --h4x
+	local lim = math.Clamp(math.floor((#player.GetAll()-1)/3),1,4)
+	local num = #ents.FindByClass("curator_turret") 
+	if num < lim then
+		return 0
+	else
+		return math.huge
+	end
+end,
 "models/Combine_turrets/Floor_turret.mdl"):SetAngularOffset(StdRot))

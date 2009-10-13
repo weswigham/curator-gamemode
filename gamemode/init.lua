@@ -31,7 +31,10 @@ resource.AddFile("materials/CuratorHUD/person.vtf")
 resource.AddFile("materials/effects/emp_ring.vmt")
 resource.AddFile("materials/effects/emp_blast.vtf")
 
+GM.LossAmt = 100
+
 function GM:Initialize()
+	
 end
 
 local function CurInitPostEntity()
@@ -167,12 +170,9 @@ function GM:PlayerSpawn( pl )
 		pl:SetMoveType(MOVETYPE_WALK)
 		pl:SetNoDraw(false)
 		pl:SetTeam(TEAM_THIEF)
-		for k,v in pairs(pl.ItemList) do
-			if v.OnSpawn then v:OnSpawn(pl) end
-		end
 		if not pl:GetPData("hasbeenthief") then
 			pl:SetPData("hasbeenthief","yah")
-			SendUserMessage("OpenHelp",pl)
+			SendUserMessage("OpenHelp",pl,0)
 		end
 	else
 		pl:SetMoveType(MOVETYPE_NOCLIP)
@@ -184,7 +184,7 @@ function GM:PlayerSpawn( pl )
 		pl:SetTeam(TEAM_CURATOR)
 		if not pl:GetPData("hasbeencurator") then
 			pl:SetPData("hasbeencurator","yah")
-			SendUserMessage("OpenHelp",pl)
+			SendUserMessage("OpenHelp",pl,1)
 		end
 	end
 	
@@ -213,6 +213,12 @@ end
 function GM:PlayerLoadout( ply )
 
 	ply:RemoveAllAmmo()
+	
+	for k,v in pairs(ply.ItemList) do
+		if v.Item.OnSpawn then 
+			v.Item:OnSpawn(ply) 
+		end
+	end
 
 	local cl_defaultweapon = ply:GetInfo( "cl_defaultweapon" )
 
@@ -253,6 +259,13 @@ function GM:Payday()
 				v.Item:SetCollectorHappiness(math.Clamp(v.Item:GetCollectorHappiness()/DecayFactor,-100,-0.25))
 			end
 		end
+	end
+	local JItems = Junk.GetItems()
+	local entz = ents.FindByClass("info_junk_spawn")
+	for i=1,5 do
+		local item = table.Random(JItems)
+		local v = table.Random(entz)
+		item:OnSpawn(GetWorldEntity(),v:GetPos(),Angle(math.Rand(-180,180),math.Rand(-180,180),math.Rand(-180,180)))
 	end
 end
 
@@ -332,6 +345,7 @@ function GM:Think()
 	end
 	for k,v in ipairs(player.GetAll()) do
 		v:SetNWBool("Curator",v == self.Curator)
+		v:SetFrags(v:GetNWInt("money"))
 		if v ~= self.Curator and v:Team() == TEAM_THIEF and v:Alive() and v:GetNWInt("Detection") >= 1000 then
 			self:TriggerAlarm(v:GetPos())
 		end
@@ -360,6 +374,16 @@ function GM:Think()
 	end
 end 
 
+function GM:CalledPerSecond()
+	if not self.Curator then return end
+	if #ents.FindByClass("curator_art") < 1 and not self.GraceTime then
+		self.Curator:SetNWInt("money",math.Clamp(self.Curator:GetNWInt("money")-self.LossAmt,0,math.huge))
+	end
+	if (not self.GraceTime) and self.Curator:GetNWInt("money") == 0 and self.Curator:GetNWInt("happ1") == 0 and self.Curator:GetNWInt("happ2") == 0 and self.Curator:GetNWInt("happ3") == 0 then
+		RoundTimer.EndRound()
+	end
+end
+
 function GM:ResetMap()
 	game.CleanUpMap()
 end
@@ -375,6 +399,7 @@ function table.WeightedRandom(tbl,weights)
 end
 
 function GM:RoundBegin()
+	self.GraceTime = true
 	self:ResetMap()
 	for k,v in ipairs(player.GetAll()) do
 		v:SetNWBool("Curator",false)
@@ -419,12 +444,13 @@ function GM:RoundBegin()
 		local item = table.Random(_G[table.Random{"Family","Fancy","Enthusist"}].GetItems())
 		item:OnSpawn(self.Curator,v:GetPos(),Angle(0,0,0))
 	end
-	
-	end)
+	self.GraceTime = false
+	end
+	)
 end
 
 local function FadingShouldCollide(e1,e2)
-	if (e1:IsPlayer() or e2:IsPlayer()) and (e1.Fading or e2.Fading) then
+	if ((e1:IsPlayer() or e2:IsPlayer()) and (e1.Fading or e2.Fading)) or (e1:IsPlayer() and e2:IsPlayer()) then
 		return false
 	else
 		return true
@@ -433,6 +459,7 @@ end
 hook.Add("ShouldCollide","CuratorFadingShouldCollide",FadingShouldCollide)
 
 function GM:RoundEnd()
+	self.GraceTime = true
 	for k,v in ipairs(player.GetAll()) do
 		v:Lock()
 		v:ConCommand("OpenEndGameWindow")
@@ -553,6 +580,20 @@ concommand.Add("CuratorSellOff",function(ply,cmd,arg)
 		end
 	else
 		ply:ChatPrint("You can't sell that off!")
+	end
+end)
+
+concommand.Add("CuratorHardenScurity",function(ply,cmd,arg)
+	local ent = ents.GetByIndex(arg[1])
+	if ent and ent:IsValid() and string.find(ent:GetClass(),"curator_") and ent.Item then
+		if Security.GetItem(ent.Item:GetName()) then
+			ply:SetNWInt("money",ply:GetNWInt("money")-(ent.Item:GetPrice()*0.5))
+			ent.Hardened = true
+		else
+			ply:ChatPrint("You can't harden something that is not security!")
+		end
+	else
+		ply:ChatPrint("You can't harden that!")
 	end
 end)
 

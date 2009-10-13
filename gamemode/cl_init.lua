@@ -430,9 +430,9 @@ function GM:Think()
 			LocalPlayer().Ghost:SetAngles(tr.HitNormal:Angle()+LocalPlayer().GhostItem:AngularOffset()+AddAng)
 
 			LocalPlayer().Ghost:SetNoDraw(false)
-			if input.IsKeyDown(KEY_LBRACKET) then
+			if input.IsKeyDown(KEY_LBRACKET) or input.IsKeyDown(KEY_N) then
 				AddAng = AddAng - yaw
-			elseif input.IsKeyDown(KEY_RBRACKET) then
+			elseif input.IsKeyDown(KEY_RBRACKET) or input.IsKeyDown(KEY_M) then
 				AddAng = AddAng + yaw
 			end
 		elseif LocalPlayer().Ghost and LocalPlayer().Ghost:IsValid() then
@@ -582,7 +582,7 @@ concommand.Add("OpenEndGameWindow", function()
 			draw.SimpleText("Liquid: $"..math.Round(curator:GetNWInt("liquid")),tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*2),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 			draw.SimpleText("Total: $"..math.Round(curator:GetNWInt("liquid")+curator:GetNWInt("money")),tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*3),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 			
-			draw.SimpleText("Ammount of Art at Endgame: "..#ents.FindByClass("curator_art"),tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*5),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			draw.SimpleText("Amount of Art at Endgame: "..#ents.FindByClass("curator_art"),tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*5),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 			
 			local securityAmt = 0
 			securityAmt = securityAmt + #ents.FindByClass("curator_camera")
@@ -591,7 +591,7 @@ concommand.Add("OpenEndGameWindow", function()
 			securityAmt = securityAmt + #ents.FindByClass("curator_laser")
 			securityAmt = securityAmt + #ents.FindByClass("curator_laser_grid")
 
-			draw.SimpleText("Ammount of Security at Endgame: "..securityAmt,tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*6),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			draw.SimpleText("Amount of Security at Endgame: "..securityAmt,tIDFont,BottomX+20,(BottomY+20)+((fnth+4)*6),team.GetColor(curator:Team()),TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 		end
 	end
 	
@@ -685,7 +685,7 @@ usermessage.Hook("OpenHelp",function(um)
 	local ply = LocalPlayer()
 	if not ply.Open then
 		ply.Open = true
-		if ply:GetNWBool("Curator") then
+		if ply:GetNWBool("Curator") or util.tobool(um:ReadLong()) then
 			HelpMenu("Curator")
 		else
 			HelpMenu()
@@ -774,7 +774,10 @@ local CuratorHelpCategories = {}
 CuratorHelpCategories["Basic"] = {"WELCOME TO CURATOR!",
 "",
 "As the Curator your goal is to create a thiving",
-"museum and to protectect it from thieves!"}
+"museum and to protectect it from thieves!",
+"",
+"As little note: If you have no art in play, you",
+"lose $100 per think."}
 CuratorHelpCategories["Controls"] = {"Controls:",
 "",
 "W - Forward",
@@ -783,8 +786,8 @@ CuratorHelpCategories["Controls"] = {"Controls:",
 "D - Right",
 "Space - Up (Normal controls while in noclip, essentially.)",
 "Shift - Toggle Between Cursor Mode and Freelook Mode",
-"[ - Rotate an object attached to your mouse",
-"] - Rotate an object attached to your mouse in the opposite direction",
+"[ Or N - Rotate an object attached to your mouse",
+"] Or M - Rotate an object attached to your mouse in the opposite direction",
 "F1 - Open/Close Help HUD/Menu (But you already knew that, right?)"}
 CuratorHelpCategories["Spawning Objects"] = {"How to spawn an object:",
 "",

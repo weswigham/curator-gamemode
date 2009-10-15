@@ -138,15 +138,18 @@ function ents.FindInConeFix(p1,p2,Radius)
 	local dist = p1:Distance(p2)
 	local v1 = p2-p1
 	v1:Normalize()
-	for k,v in ipairs(ents.GetAll()) do
+	local num = math.sqrt(dist^2+Radius^2)
+	for k,v in ipairs(ents.FindInSphere(p1,num)) do
 		local v2 = v:GetPos()-p1
 		v2:Normalize()
-		if v1:Dot(v2) >= (math.atan2(Radius,dist)*2) then
+		if v1:Dot(v2) >= math.atan(Radius/dist) and v:GetPos():Distance(p1) <= dist then
 			table.insert(tbl,v)
 		end
 	end
 	return tbl
 end
+
+
 local red = Color(255,0,0,255)
 
 function player.FindInCone(p1,p2,Radius)
@@ -157,17 +160,10 @@ function player.FindInCone(p1,p2,Radius)
 	for k,v in ipairs(player.GetAll()) do
 		local v2 = v:GetPos()-p1
 		v2:Normalize()
-		if v1:Dot(v2) >= (math.atan2(Radius,dist)*2) then
+		if v1:Dot(v2) >= math.atan(Radius/dist) and v:GetPos():Distance(p1) <= dist then
 			table.insert(tbl,v)
-				debugoverlay.Cross(p1,50,1,red)
-				debugoverlay.Line(p1,v:GetPos(),1,red)
-				debugoverlay.Cross(v:GetPos(),50,1,red)
 		end
 	end
-		debugoverlay.Cross(p1,50)
-		debugoverlay.Line(p1,p2)
-		debugoverlay.Cross(p2,50)
-		debugoverlay.Sphere(p2,Radius)
 	return tbl
 end
 

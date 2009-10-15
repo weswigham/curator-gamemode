@@ -499,7 +499,7 @@ function GM:GUIMousePressed(mc)
 				end
 			end,"No",function() end) end )
 			if tr.Entity.IType and tr.Entity.IType == "Security" then
-				MenuButtonOptions:AddOption("Harden (EMP Protection)", function() end )
+				MenuButtonOptions:AddOption("Harden (EMP Protection)", function() Derma_Query("Are you sure you want to harden this?\nIt's costs anywhere from $500 to 1/2 the item's original cost!","Confirmation Dialogue","Yes",function() RunConsoleCommand("CuratorHardenSecurity",tr.Entity:EntIndex()) end,"No",function() end) end )
 			end
 			MenuButtonOptions:AddOption("Close", function() end )
 			MenuButtonOptions:Open()

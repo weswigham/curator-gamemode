@@ -299,6 +299,9 @@ end
 
 function GM:PlayerDisconnected( ply )
 	SelectionWeights[ply] = nil
+	for k,v in ipairs(ply.ItemList) do
+		if v.Entity and ValidEntity(v.Entity) then v.Entity:StopFade() end
+	end
 end
 
 function GM:TriggerAlarm(sndPos)
@@ -571,7 +574,7 @@ end)
 concommand.Add("CuratorSellOff",function(ply,cmd,arg) 
 	local ent = ents.GetByIndex(arg[1])
 	if ent and ent:IsValid() and string.find(ent:GetClass(),"curator_") and ent.Item then
-		if not ent.Fading then
+		if (not ent.Fading) or Security.GetItem(ent.Item:GetName()) then
 			ply:SetNWInt("money",ply:GetNWInt("money")+(ent.Item:GetPrice()*0.25))
 			if timer.IsTimer(ent:EntIndex().."Reenable") then timer.Destroy(ent:EntIndex().."Reenable") end
 			ent:Remove()
@@ -583,14 +586,18 @@ concommand.Add("CuratorSellOff",function(ply,cmd,arg)
 	end
 end)
 
-concommand.Add("CuratorHardenScurity",function(ply,cmd,arg)
+concommand.Add("CuratorHardenSecurity",function(ply,cmd,arg)
 	local ent = ents.GetByIndex(arg[1])
 	if ent and ent:IsValid() and string.find(ent:GetClass(),"curator_") and ent.Item then
-		if Security.GetItem(ent.Item:GetName()) then
-			ply:SetNWInt("money",ply:GetNWInt("money")-(ent.Item:GetPrice()*0.5))
-			ent.Hardened = true
+		if ply:GetNWInt("money") >= math.Clamp(ent.Item:GetPrice()*0.5,500,math.huge) then
+			if Security.GetItem(ent.Item:GetName()) then
+				ply:SetNWInt("money",ply:GetNWInt("money")-math.Clamp(ent.Item:GetPrice()*0.5,500,math.huge))
+				ent.Hardened = true
+			else
+				ply:ChatPrint("You can't harden something that is not security!")
+			end
 		else
-			ply:ChatPrint("You can't harden something that is not security!")
+			ply:ChatPrint("You don't have enough money to harden that "..ent.Item:GetName().." you need $"..math.Clamp(ent.Item:GetPrice()*0.5,500,math.huge))
 		end
 	else
 		ply:ChatPrint("You can't harden that!")

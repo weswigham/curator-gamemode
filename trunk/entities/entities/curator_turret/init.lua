@@ -17,10 +17,12 @@ function ENT:Initialize()
 
 end
 
+local DownAmt = Vector(0,0,-10)
+
 function ENT:Think()
 	if self.Active then
-		local radius = 500
-		local distance = 950
+		local radius = 750
+		local distance = 1000
 		local ply
 		local plaeyerz = player.FindInCone(self:EyePos(),self:EyePos()+(self:GetAngles():Forward()*distance),radius)
 		for k,v in ipairs(plaeyerz) do
@@ -40,8 +42,8 @@ function ENT:Think()
 			local tbl = {}
 			tbl.Num = math.random(1,2)
 			tbl.Src = att.Pos
-			tbl.Dir = (ply:GetShootPos()-att.Pos):Normalize()
-			tbl.Spread=Vector(0.02,0.02,0)
+			tbl.Dir = ((ply:GetShootPos()+DownAmt)-att.Pos):Normalize()
+			tbl.Spread=Vector(0.05,0.05,0)
 			tbl.Tracer=1	
 			tbl.Force = 4
 			tbl.Damage = 4

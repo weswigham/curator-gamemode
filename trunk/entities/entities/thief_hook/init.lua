@@ -21,11 +21,11 @@ function ENT:Initialize()
 end
 
 function ENT:Think()
-
+	
 end
 
 function ENT:OnRemove()
-
+    self.Player:SetNWEntity("GrappleHook", NULL)
 end
 
 function ENT:Use(ply,callr)
@@ -35,6 +35,7 @@ end
 function ENT:PhysicsCollide(data,pobj)
 	if SERVER then
 		if data.HitPos:IsInLadder() then
+			self.Player:SetNWEntity("GrappleHook", self)
 			pobj:EnableMotion(false)
 			self.HookedOn = true
 			local num = self:GetPos():Distance(self.Player:GetPos())*-1

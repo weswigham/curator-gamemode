@@ -376,6 +376,8 @@ local function OpenInventory()
 			LocalPlayer().Inventory:SetSize(88, (268+64))
 			LocalPlayer().Inventory:Open()
 		end
+	else
+		gui.EnableScreenClicker(true)
 	end
 
 	return false
@@ -385,6 +387,8 @@ hook.Add("OnSpawnMenuOpen", "OpenInventory", OpenInventory)
 local function CloseInventory()
 	if ValidEntity(LocalPlayer().Inventory) then
 		LocalPlayer().Inventory:Close()
+	else
+		gui.EnableScreenClicker(false)
 	end
 end
 hook.Add("OnSpawnMenuClose", "CloseInventory", CloseInventory)

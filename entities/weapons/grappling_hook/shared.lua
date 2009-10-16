@@ -200,7 +200,9 @@ function SWEP:Think()
 end
 
 
-if SERVER then
+
+local tblClientTracer = {filter = {}}
+
 local function Hooker(plySubject, objMoveData)
     local self = plySubject.tblCuratorGrappleHookMoveInfo or {}
     plySubject.tblCuratorGrappleHookMoveInfo = self
@@ -220,16 +222,16 @@ local function Hooker(plySubject, objMoveData)
     
     local bOnGround = plySubject:IsOnGround()
         if self.bWasOnGround ~= false then -- Handles nil too
-            nHookDistance = nHookDistance -- 100
-            
-            self.nInitialDist = nHookDistance
+            --nHookDistance = nHookDistance - 100
             self.LastHookDist = nHookDistance
+            
+            if SERVER then
+            plySubject:SetNWInt("Curator.GrappleAmt", nHookDistance)
+            end
         end
     self.bWasOnGround = bOnGround
     
     if not bOnGround then
-        assert(self.nInitialDist ~= nil) -- Should be true
-        
         local vecAimDir      = plySubject:GetAimVector()
         local vecHookDirNrml = (vecHookDir * 1):Normalize()
         
@@ -237,21 +239,28 @@ local function Hooker(plySubject, objMoveData)
         local vecAimDirXY = vecAimDir * 1; vecAimDirXY.z = 0
         local angAimDirXY = vecAimDirXY:Angle()
         
-        local nDistPercXY = math.Clamp(1 - math.min(((vecHookPos.x - vecShootPos.x)^2 + (vecHookPos.y - vecShootPos.y)^2)^0.5 / self.nInitialDist, 1), 0, 1)
+        local nInitialDist = plySubject:GetNWInt("Curator.GrappleAmt", 0)
+        local nDistPercXY  = math.Clamp(1 - math.min(((vecHookPos.x - vecShootPos.x)^2 + (vecHookPos.y - vecShootPos.y)^2)^0.5 / nInitialDist, 1), 0, 1)
         
         if plySubject:KeyDown(IN_FORWARD) and plySubject:KeyDown(IN_SPEED) then
-            self.nInitialDist = math.max(self.nInitialDist - (SLACK_DELTA * FrameTime()), 32)
+            if SERVER then
+            nInitialDist = math.max(nInitialDist - (SLACK_DELTA * FrameTime()), 32)
+            end
             objMoveData:SetForwardSpeed(0)
         end
         
         if plySubject:KeyDown(IN_BACK) and plySubject:KeyDown(IN_SPEED) then
-            self.nInitialDist = self.nInitialDist + (SLACK_DELTA * FrameTime())
+            if SERVER then
+            nInitialDist = nInitialDist + (SLACK_DELTA * FrameTime())
+            end
             objMoveData:SetForwardSpeed(0)
         end
         
-        local nDistPerc     = (nHookDistance / self.nInitialDist)^0.1
+        plySubject:SetNWInt("Curator.GrappleAmt", nInitialDist)
+        
+        local nDistPerc     = (nHookDistance / nInitialDist)^0.1
         local nDeltaValue   = math.Clamp(2 - math.max(self.LastHookDist - nHookDistance, 0), 0, 2) / 2
-        local nDistOverflow = math.max(nHookDistance - self.nInitialDist, 0)
+        local nDistOverflow = math.max(nHookDistance - nInitialDist, 0)
         local vecDahForce = vecHookDirNrml * -nDistOverflow * FrameTime() * SPHERE_COEFF * nDeltaValue
         vecDahForce.z = vecDahForce.z + (GRAVITY * FrameTime())
         
@@ -265,4 +274,3 @@ local function Hooker(plySubject, objMoveData)
     end
 end
 hook.Add("Move", "Curator.GrappleHook", Hooker)
-end 

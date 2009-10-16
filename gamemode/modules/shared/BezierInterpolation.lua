@@ -26,16 +26,25 @@ function Bezier.Point(xval,yval)
 	return {x=xval,y=yval}
 end 
 
+local DoneFactorials = {}
+
 function Bezier.Factorial(n)
-  if n == 0 then
-    return 1
-  else
-    return n * Bezier.Factorial(n - 1)
-  end
+	if DoneFactorials[n] then return DoneFactorials[n] end
+	if n == 0 then
+		return 1
+	else
+		DoneFactorials[n] = n * Bezier.Factorial(n - 1)
+		return DoneFactorials[n]
+	end
 end 
 
+local DoneCombinations = {}
+
 function Bezier.Combinations(n,k)
-	return Bezier.Factorial(n)/(Bezier.Factorial(k)*Bezier.Factorial(n-k))
+	if DoneCombinations[n] and DoneCombinations[n][k] then return DoneCombinations[n][k] end
+	if not DoneCombinations[n] then DoneCombinations[n] = {} end
+	DoneCombinations[n][k] = Bezier.Factorial(n)/(Bezier.Factorial(k)*Bezier.Factorial(n-k))
+	return DoneCombinations[n][k]
 end
 
 function Bezier.Generalization(dis,...)

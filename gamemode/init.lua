@@ -454,12 +454,18 @@ end
 
 local function FadingShouldCollide(e1,e2)
 	if ((e1:IsPlayer() or e2:IsPlayer()) and (e1.Fading or e2.Fading)) or (e1:IsPlayer() and e2:IsPlayer()) then
+		if e1 == GAMDEMODE.Curator or e2 == GAMEMODE.Curator then return true end --fix up dem traces
 		return false
 	else
 		return true
 	end
 end
 hook.Add("ShouldCollide","CuratorFadingShouldCollide",FadingShouldCollide)
+
+function GM:PlayerSwitchFlashlight(ply,switch)
+	if ply ~= self.Curator then return true end
+	return false
+end
 
 function GM:RoundEnd()
 	self.GraceTime = true

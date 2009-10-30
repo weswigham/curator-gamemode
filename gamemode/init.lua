@@ -1,6 +1,7 @@
 
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
+AddCSLuaFile( "cl_scoreboard.lua" )
 
 
 include( 'shared.lua' )
@@ -288,7 +289,7 @@ function GM:PlayerInitialSpawn( ply )
 	self.BaseClass:PlayerInitialSpawn( ply )
 	SelectionWeights[ply] = 1
 	ply.ItemList = {}
-
+	ply:SetDeaths(SelectionWeights[ply])
 	timer.Simple(5,function()
 	for k,v in ipairs(ents.FindByClass("trigger_ladder")) do
 		SendUserMessage("RecieveLadder",ply,v:LocalToWorld(v:OBBMaxs()),v:LocalToWorld(v:OBBMins()))
@@ -454,7 +455,6 @@ end
 
 local function FadingShouldCollide(e1,e2)
 	if ((e1:IsPlayer() or e2:IsPlayer()) and (e1.Fading or e2.Fading)) or (e1:IsPlayer() and e2:IsPlayer()) then
-		if e1 == GAMDEMODE.Curator or e2 == GAMEMODE.Curator then return true end --fix up dem traces
 		return false
 	else
 		return true
@@ -467,12 +467,17 @@ function GM:PlayerSwitchFlashlight(ply,switch)
 	return false
 end
 
+function GM:CanPlayerSuicide(ply)
+	return false
+end
+
 function GM:RoundEnd()
 	self.GraceTime = true
 	for k,v in ipairs(player.GetAll()) do
 		v:Lock()
 		v:ConCommand("OpenEndGameWindow")
 		SelectionWeights[v] = SelectionWeights[v] + 1
+		v:SetDeaths(SelectionWeights[v])
 		v:SetNWBool("Curator",false)
 		v:KillSilent()
 		for kz,vz in pairs(v.ItemList) do

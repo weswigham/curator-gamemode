@@ -161,7 +161,7 @@ function CHATCMD:Run( ply, ... )
 		local OnFail = function() 
 			PrintMessage( HUD_PRINTTALK,"The vote to start a new round has failed!")
 		end
-		GAMEMODE:SetupVote("Starting a new round", 30, (1/3), OnPass, OnFail) --Name, Duration, OnPass, OnFail
+		GAMEMODE:SetupVote("Starting a new round", 30, (2/3), OnPass, OnFail) --Name, Duration, OnPass, OnFail
 	else
 		ply:PrintMessage( HUD_PRINTTALK, "A vote is already in progress!")
 	end
@@ -365,7 +365,7 @@ function CHATCMD:Run( ply, ... )
 			local OnFail = function() 
 				PrintMessage( HUD_PRINTTALK,"The vote to start a new round has failed!")
 			end
-			GAMEMODE:SetupVote("Starting a new round", 30, (1/3), OnPass, OnFail) --Name, Duration, OnPass, OnFail
+			GAMEMODE:SetupVote("Starting a new round", 30, (2/3), OnPass, OnFail) --Name, Duration, OnPass, OnFail
 		else
 			ply:PrintMessage( HUD_PRINTTALK, "A vote is already in progress!")
 		end
@@ -390,7 +390,7 @@ function CHATCMD:Run( ply, ... )
 			local OnFail = function() 
 				PrintMessage( HUD_PRINTTALK,"The vote to start a new round has failed!")
 			end
-			GAMEMODE:SetupVote("Starting a new round", 30, (1/3), OnPass, OnFail) --Name, Duration, OnPass, OnFail
+			GAMEMODE:SetupVote("Starting a new round", 30, (2/3), OnPass, OnFail) --Name, Duration, OnPass, OnFail
 		else
 			ply:PrintMessage( HUD_PRINTTALK, "A vote is already in progress!")
 		end

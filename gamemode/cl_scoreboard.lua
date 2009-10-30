@@ -89,7 +89,7 @@ function GM:HUDDrawScoreBoard()
 	local scrHeight = ScrH() - 64
 	local boardWidth = scrWidth - (2* xOffset)
 	local boardHeight = scrHeight
-	local colWidth =100
+	local colWidth =110
 	
 	boardWidth = math.Clamp( boardWidth, 400, 600 )
 	boardHeight = GAMEMODE.ScoreDesign.Height
@@ -158,7 +158,7 @@ function GM:HUDDrawScoreBoard()
 	y = y + 2
 	
 	surface.SetTextPos( xOffset + 16,								y)	surface.DrawText("#Name")
-	surface.SetTextPos( xOffset + boardWidth - (colWidth*3) + 8,	y)	surface.DrawText("#Score")
+	surface.SetTextPos( xOffset + boardWidth - (colWidth*3) + 8,	y)	surface.DrawText("Money")
 	surface.SetTextPos( xOffset + boardWidth - (colWidth*2) + 8,	y)	surface.DrawText("Curator Weight")
 	surface.SetTextPos( xOffset + boardWidth - (colWidth*1) + 8,	y)	surface.DrawText("#Ping")
 	

@@ -49,7 +49,6 @@ end
 function ENT:ReActivate()
 	self.Active = true
 	self:EmitSound("HL1/fvox/activated.wav",SNDLVL_VOICE,100)
-	print("Activated")
 	
 	local angForward = self.Entity:GetAngles()
 	
@@ -72,7 +71,7 @@ function ENT:ReActivate()
 		
 		
 	self.flashlight:Spawn()
-	
+	self:DeleteOnRemove(self.flashlight)
 	self.flashlight:Input( "SpotlightTexture", NULL, NULL, self.FlashlightTexture )
 end
 

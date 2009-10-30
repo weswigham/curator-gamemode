@@ -24,7 +24,7 @@ function GM:GetTeamScoreInfo()
 	for id,pl in pairs( player.GetAll() ) do
 	
 		local _team = pl:Team()
-		local _frags = pl:GetNWInt("money")
+		local _frags = math.floor(pl:GetNWInt("money"))
 		local _deaths = pl:Deaths()
 		local _ping = pl:Ping()
 		
@@ -89,7 +89,7 @@ function GM:HUDDrawScoreBoard()
 	local scrHeight = ScrH() - 64
 	local boardWidth = scrWidth - (2* xOffset)
 	local boardHeight = scrHeight
-	local colWidth = 75
+	local colWidth =100
 	
 	boardWidth = math.Clamp( boardWidth, 400, 600 )
 	boardHeight = GAMEMODE.ScoreDesign.Height

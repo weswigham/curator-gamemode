@@ -32,7 +32,7 @@ resource.AddFile("materials/CuratorHUD/person.vtf")
 resource.AddFile("materials/effects/emp_ring.vmt")
 resource.AddFile("materials/effects/emp_blast.vtf")
 
-GM.LossAmt = 100
+GM.LossAmt = 50
 
 function GM:Initialize()
 	
@@ -378,13 +378,18 @@ function GM:Think()
 	end
 end 
 
+local num = 0
 function GM:CalledPerSecond()
 	if not self.Curator then return end
-	if #ents.FindByClass("curator_art") < 1 and not self.GraceTime then
-		self.Curator:SetNWInt("money",math.Clamp(self.Curator:GetNWInt("money")-self.LossAmt,0,math.huge))
-	end
-	if (not self.GraceTime) and self.Curator:GetNWInt("money") == 0 and self.Curator:GetNWInt("happ1") == 0 and self.Curator:GetNWInt("happ2") == 0 and self.Curator:GetNWInt("happ3") == 0 then
-		RoundTimer.EndRound()
+	num = num + 1
+	if num >= 3 then
+		num = 0
+		if #ents.FindByClass("curator_art") < 1 and not self.GraceTime then
+			self.Curator:SetNWInt("money",math.Clamp(self.Curator:GetNWInt("money")-self.LossAmt,0,math.huge))
+		end
+		if (not self.GraceTime) and self.Curator:GetNWInt("money") == 0 and self.Curator:GetNWInt("happ1") == 0 and self.Curator:GetNWInt("happ2") == 0 and self.Curator:GetNWInt("happ3") == 0 then
+			RoundTimer.EndRound()
+		end
 	end
 end
 

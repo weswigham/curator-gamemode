@@ -420,8 +420,20 @@ usermessage.Hook("RecieveCuratorEntItem",RecieveCuratorEntItem)
 local yaw = Angle(0,2.5,0)
 local AddAng = Angle(0,0,0)
 local StdRot = Angle(90,0,0)
+local snd = Sound("music/hl2_song29.mp3")
+local duration = SoundDuration(snd)
+local NextEndTime = 0
+
+concommand.Add("StopRepeatingBGMusic",function(ply,cmd,args) NextEndTime = math.huge end)
+concommand.Add("StartupBGMusic",function(ply,cmd,args) if NextEndTime == math.huge then NextEndTime = CurTime() end  end)
 
 function GM:Think()
+	
+	if NextEndTime <= CurTime() then
+		NextEndTime = CurTime() + duration
+		surface.PlaySound( snd )
+	end
+	
 	if LocalPlayer().GhostIsActive then
 		local tr = LocalPlayer():GetEyeTrace()
 		if tr and tr.Hit and (not tr.HitSkybox) and tr.HitWorld and not tr.HitNoDraw then

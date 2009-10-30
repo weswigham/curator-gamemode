@@ -422,7 +422,8 @@ function GM:RoundBegin()
 	end
 	self.Curator = nil
 	self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)
-	SelectionWeights[self.Curator] = 1
+	self.Curator:SetDeaths(SelectionWeights[self.Curator])
+	SelectionWeights[self.Curator] = 0
 	self.Curator:SetNWBool("Curator",true)
 	self.Curator:SetNWInt("money",10000)
 	self.Curator:SetTeam(TEAM_CURATOR)

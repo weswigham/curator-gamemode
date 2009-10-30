@@ -1,5 +1,5 @@
 include( 'shared.lua' )
-
+include( 'cl_scoreboard.lua' )
 
 
 for _, file in ipairs( file.Find( "../gamemodes/"..GM.Folder:gsub( "gamemodes/", "" ).."/gamemode/modules/client/*.lua" ) ) do

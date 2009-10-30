@@ -53,11 +53,12 @@ function SWEP:Think()
 			self.ShieldEnt:Spawn()
 			self.ShieldEnt:Activate()
 			self.ShieldEnt:GetPhysicsObject():EnableMotion(false)
+			self.Owner:SendLua("Entity("..self.ShieldEnt:EntIndex()..").Fading = true")
 		elseif self.ShieldEnt and self.Off then
 			self.ShieldEnt:Remove()
 			self.ShieldEnt = nil
 		elseif self.ShieldEnt then
-			self.ShieldEnt:SetPos(self.Owner:GetShootPos()+(self.Owner:GetAimVector()*15))
+			self.ShieldEnt:SetPos(self.Owner:GetShootPos()+(self.Owner:GetAimVector()*50))
 			self.ShieldEnt:SetAngles(self.Owner:GetAngles())
 		end
 		

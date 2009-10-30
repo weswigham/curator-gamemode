@@ -136,7 +136,7 @@ function CHATCMD:Run( ply, ... )
 		local OnFail = function() 
 			PrintMessage( HUD_PRINTTALK,"The vote to kick"..found:Nick().." has failed!")
 		end
-		GAMEMODE:SetupVote("Kicking "..found:Nick(), 30, 1, OnPass, OnFail) --Name, Duration, OnPass, OnFail
+		GAMEMODE:SetupVote("Kicking "..found:Nick(), 30, (4/5), OnPass, OnFail) --Name, Duration, OnPass, OnFail
 	elseif not found then
 		ply:PrintMessage( HUD_PRINTTALK, "Player "..name.." could not be found.")
 	else
@@ -146,7 +146,7 @@ end
 RegisterChatCmd(CHATCMD.Command,CHATCMD)
 
 /*---------------------------------------------------------
-vote kick
+vote new round
 ---------------------------------------------------------*/
 local CHATCMD = {}
 
@@ -161,7 +161,7 @@ function CHATCMD:Run( ply, ... )
 		local OnFail = function() 
 			PrintMessage( HUD_PRINTTALK,"The vote to start a new round has failed!")
 		end
-		GAMEMODE:SetupVote("Starting a new round", 30, 1, OnPass, OnFail) --Name, Duration, OnPass, OnFail
+		GAMEMODE:SetupVote("Starting a new round", 30, (1/3), OnPass, OnFail) --Name, Duration, OnPass, OnFail
 	else
 		ply:PrintMessage( HUD_PRINTTALK, "A vote is already in progress!")
 	end
@@ -223,6 +223,78 @@ end
 RegisterChatCmd(CHATCMD.Command,CHATCMD)
 
 /*---------------------------------------------------------
+"Yes!"
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "yeah"
+CHATCMD.Desc = "- A yes vote."
+function CHATCMD:Run( ply, ... )
+	if ply.HasVoted then return end
+	if GAMEMODE.ActiveVoting == true then
+		ply:PrintMessage( HUD_PRINTTALK, "Your yes vote has been recorded.")
+		ply.HasVoted = true
+		GAMEMODE.CurrentVote.Yes = GAMEMODE.CurrentVote.Yes + 1
+		PrintMessage( HUD_PRINTTALK, "The Vote For "..GAMEMODE.CurrentVote.Name.." is now at "..GAMEMODE.CurrentVote.Yes.." with yes to "..GAMEMODE.CurrentVote.No.." with no." )
+	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+"Yes!"
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "sure"
+CHATCMD.Desc = "- A yes vote."
+function CHATCMD:Run( ply, ... )
+	if ply.HasVoted then return end
+	if GAMEMODE.ActiveVoting == true then
+		ply:PrintMessage( HUD_PRINTTALK, "Your yes vote has been recorded.")
+		ply.HasVoted = true
+		GAMEMODE.CurrentVote.Yes = GAMEMODE.CurrentVote.Yes + 1
+		PrintMessage( HUD_PRINTTALK, "The Vote For "..GAMEMODE.CurrentVote.Name.." is now at "..GAMEMODE.CurrentVote.Yes.." with yes to "..GAMEMODE.CurrentVote.No.." with no." )
+	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+"Yes!"
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "yah"
+CHATCMD.Desc = "- A yes vote."
+function CHATCMD:Run( ply, ... )
+	if ply.HasVoted then return end
+	if GAMEMODE.ActiveVoting == true then
+		ply:PrintMessage( HUD_PRINTTALK, "Your yes vote has been recorded.")
+		ply.HasVoted = true
+		GAMEMODE.CurrentVote.Yes = GAMEMODE.CurrentVote.Yes + 1
+		PrintMessage( HUD_PRINTTALK, "The Vote For "..GAMEMODE.CurrentVote.Name.." is now at "..GAMEMODE.CurrentVote.Yes.." with yes to "..GAMEMODE.CurrentVote.No.." with no." )
+	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+"Yes!"
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "yar"
+CHATCMD.Desc = "- A yes vote."
+function CHATCMD:Run( ply, ... )
+	if ply.HasVoted then return end
+	if GAMEMODE.ActiveVoting == true then
+		ply:PrintMessage( HUD_PRINTTALK, "Your yes vote has been recorded.")
+		ply.HasVoted = true
+		GAMEMODE.CurrentVote.Yes = GAMEMODE.CurrentVote.Yes + 1
+		PrintMessage( HUD_PRINTTALK, "The Vote For "..GAMEMODE.CurrentVote.Name.." is now at "..GAMEMODE.CurrentVote.Yes.." with yes to "..GAMEMODE.CurrentVote.No.." with no." )
+	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
 "No!"
 ---------------------------------------------------------*/
 local CHATCMD = {}
@@ -236,6 +308,92 @@ function CHATCMD:Run( ply, ... )
 		ply.HasVoted = true
 		GAMEMODE.CurrentVote.No = GAMEMODE.CurrentVote.No + 1
 		PrintMessage( HUD_PRINTTALK, "The Vote For "..GAMEMODE.CurrentVote.Name.." is now at "..GAMEMODE.CurrentVote.Yes.." with yes to "..GAMEMODE.CurrentVote.No.." with no." )
+	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+"No!"
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "nay"
+CHATCMD.Desc = "- A no vote."
+function CHATCMD:Run( ply, ... )
+	if ply.HasVoted then return end
+	if GAMEMODE.ActiveVoting == true then
+		ply:PrintMessage( HUD_PRINTTALK, "Your no vote has been recorded.")
+		ply.HasVoted = true
+		GAMEMODE.CurrentVote.No = GAMEMODE.CurrentVote.No + 1
+		PrintMessage( HUD_PRINTTALK, "The Vote For "..GAMEMODE.CurrentVote.Name.." is now at "..GAMEMODE.CurrentVote.Yes.." with yes to "..GAMEMODE.CurrentVote.No.." with no." )
+	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+"No!"
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "never"
+CHATCMD.Desc = "- A no vote."
+function CHATCMD:Run( ply, ... )
+	if ply.HasVoted then return end
+	if GAMEMODE.ActiveVoting == true then
+		ply:PrintMessage( HUD_PRINTTALK, "Your no vote has been recorded.")
+		ply.HasVoted = true
+		GAMEMODE.CurrentVote.No = GAMEMODE.CurrentVote.No + 1
+		PrintMessage( HUD_PRINTTALK, "The Vote For "..GAMEMODE.CurrentVote.Name.." is now at "..GAMEMODE.CurrentVote.Yes.." with yes to "..GAMEMODE.CurrentVote.No.." with no." )
+	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+Gimmeh
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "gimmeh"
+CHATCMD.Desc = "- A complex command for a friend"
+function CHATCMD:Run( ply, ... )
+	if string.find(string.lower(table.concat({...}," ")),"new round pl0x") then
+		if not GAMEMODE.ActiveVoting then
+			local OnPass = function() 
+				PrintMessage( HUD_PRINTTALK,"The vote to start a new round has passed!")
+				GAMEMODE.Curator = nil
+			end
+			local OnFail = function() 
+				PrintMessage( HUD_PRINTTALK,"The vote to start a new round has failed!")
+			end
+			GAMEMODE:SetupVote("Starting a new round", 30, (1/3), OnPass, OnFail) --Name, Duration, OnPass, OnFail
+		else
+			ply:PrintMessage( HUD_PRINTTALK, "A vote is already in progress!")
+		end
+	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+I
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "I"
+CHATCMD.Desc = "- A complex command for a friend"
+function CHATCMD:Run( ply, ... )
+	if string.find(string.lower(table.concat({...}," ")),"can has new round") then
+		if not GAMEMODE.ActiveVoting then
+			local OnPass = function() 
+				PrintMessage( HUD_PRINTTALK,"The vote to start a new round has passed!")
+				GAMEMODE.Curator = nil
+			end
+			local OnFail = function() 
+				PrintMessage( HUD_PRINTTALK,"The vote to start a new round has failed!")
+			end
+			GAMEMODE:SetupVote("Starting a new round", 30, (1/3), OnPass, OnFail) --Name, Duration, OnPass, OnFail
+		else
+			ply:PrintMessage( HUD_PRINTTALK, "A vote is already in progress!")
+		end
 	end
 end
 RegisterChatCmd(CHATCMD.Command,CHATCMD)

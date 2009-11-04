@@ -35,7 +35,9 @@ function Security.MakeStandardSpawnFunc(class)
 		ent.IType = "Security"
 		ent:SetModel(item:GetModel())
 		ent:Spawn()
-		ent.Fading = true
+		if class ~= "curator_turret" then
+			ent.Fading = true
+		end
         AccessorFunc(ent,"t_pOwner","Player")
         ent:SetPlayer(ply)
 		

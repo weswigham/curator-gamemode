@@ -535,21 +535,6 @@ function GM:GUIMousePressed(mc)
 			end
 			MenuButtonOptions:AddOption("Close", function() end )
 			MenuButtonOptions:Open()
-			return
-		end
-		local nodeforpnl = nil
-		for k,v in pairs(LocalPlayer().NodePositions) do
-			if v:Distance(tr.HitPos) <= 7 then
-				nodeforpnl = v
-				break
-			end
-		end
-		if nodeforpnl then
-			local MenuButtonOptions = DermaMenu()
-			MenuButtonOptions:AddOption("Remove Node", function() Derma_Query("Are you sure you want to remove this?\nYou will recieve It's full price.","Confirmation Dialogue","Yes",function() RunConsoleCommand("CuratorRemoveNode",tostring(nodeforpnl)) end,"No",function() end) end )
-			MenuButtonOptions:AddOption("Close", function() end )
-			MenuButtonOptions:Open()
-			return
 		end
     end
 end 

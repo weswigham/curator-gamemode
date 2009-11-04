@@ -632,7 +632,7 @@ concommand.Add("CuratorRemoveNode",function(ply,cmd,arg)
 	local pos = Vector(FixStrings(unpack(string.Explode(" ",arg[1]))))
 	for k,v in ipairs(ents.FindInSphere(pos,2)) do
 		if v:GetClass() == "guard_node" then
-			ply:SetNWInt("money",ply:GetNWInt("money")+v.Item:GetPrice())
+			ply:SetNWInt("money",ply:GetNWInt("money")+v:GetPrice())
 			v:Remove()
 			break
 		end

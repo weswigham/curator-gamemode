@@ -50,11 +50,11 @@ end
 function Bezier.Generalization(dis,...)
 	local pts = {...}
 	local n = #pts
-	local ret = 0
+	local ret = 0 --((1-dis)^n)*pts[1]
 	for i=1,n do
 		ret = ret+(Bezier.Combinations(n,i)*((1-dis)^(n-i))*(dis^i)*pos[i])
 	end
-	return ret
+	return ret --+((dis^n)*pts[n])
 end 
 
 
@@ -95,4 +95,3 @@ function Bezier.TableOfPointsOnNthDegreeCurve(col,w,h,itier,dist,...) --Color, w
 	end
 	return outtable
 end 
-

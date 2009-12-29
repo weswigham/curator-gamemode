@@ -177,7 +177,7 @@ function string.wrapwords(Str,font,width)
          end                   
      end  
      table.insert( tbl, string.sub( Str, Start, End ) )  
-     return table.concat(tbl,"\n")  
+     return tbl  
 end
 
 function ThiefShop:Init()

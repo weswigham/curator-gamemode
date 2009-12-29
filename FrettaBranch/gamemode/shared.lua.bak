@@ -21,7 +21,7 @@ GM.AllowAutoTeam = false
 GM.AllowSpectating = false
 GM.SelectClass = false
 GM.SecondsBetweenTeamSwitches = 10
-GM.GameLength = 3--(8*3)+0.5 -- 3 rounds
+GM.GameLength = (8*3)+0.5 -- 3 rounds
 GM.VotingDelay = 15 --time for winnar screenz
 GM.SelectModel = false
 

@@ -13,9 +13,6 @@ function InvPanel:PerformLayout()
 				self[pos]:SetParent(self)
 				self[pos]:SetModel(v:GetModel())
 				self[pos]:SetPos(22, k*2 + 64*(k-1))
-				self[pos].DoClick = function() 
-					CreateThiefItemInformationWindow(v,false)
-				end
 			end
 		end
 	end

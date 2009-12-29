@@ -164,6 +164,17 @@ function GM:HUDPaint()
 				draw.SimpleText(math.ceil(ply:GetNWInt("Happ3")),Font2,v.x+5,v.y-20,HapB3Col,TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			end
 		end
+		
+		local tr = LocalPlayer():GetEyeTrace()
+		if tr and tr.Entity and tr.Entity:IsValid() then
+			if (not tr.Entity.LastRecievedMin) or (tr.Entity.LastRecievedMin > math.floor(RoundTimer.GetCurrentTime()/60)) then
+				RunConsoleCommand("~ProspectiveProfitString",tr.Entity:EntIndex())
+				tr.Entity.LastRecievedMin = math.floor(RoundTimer.GetCurrentTime()/60)
+			elseif tr.Entity.ProspectiveProfitMin and tr.Entity.ProspectiveProfitMax then
+				local pos = tr.HitPos:ToScreen()
+				draw.WordBox( 10, pos.x, pos.y, "Expected Profit: Min: $"..tr.Entity.ProspectiveProfitMin.." Max: $"..tr.Entity.ProspectiveProfitMax, Font2, BGCol, TimeCol)
+			end
+		end
 	else
 	--Thief Stuff
 	
@@ -219,6 +230,17 @@ function GM:HUDPaint()
 		end
 	end
 end
+
+usermessage.Hook("PossibleProfit",function(um) 
+	local ent = ents.GetByIndex(um:ReadLong())
+	local min = um:ReadLong()
+	local max = um:ReadLong()
+	if ent and ent:IsValid() then
+		ent.ProspectiveProfitMin = min
+		ent.ProspectiveProfitMax = max
+		ent.LastRecievedMin = math.floor(RoundTimer.CurrentTime/60)
+	end
+end)
 
 function LerpColor(frac,from,to)
 	local col = Color(
@@ -538,18 +560,20 @@ function GM:GUIMousePressed(mc)
 			return
 		end
 		local nodeforpnl = nil
-		for k,v in pairs(LocalPlayer().NodePositions) do
-			if v:Distance(tr.HitPos) <= 7 then
-				nodeforpnl = v
-				break
+		if LocalPlayer().NodePositions then
+			for k,v in pairs(LocalPlayer().NodePositions) do
+				if v:Distance(tr.HitPos) <= 7 then
+					nodeforpnl = v
+					break
+				end
 			end
-		end
-		if nodeforpnl then
-			local MenuButtonOptions = DermaMenu()
-			MenuButtonOptions:AddOption("Remove Node", function() Derma_Query("Are you sure you want to remove this?\nYou will recieve It's full price.","Confirmation Dialogue","Yes",function() RunConsoleCommand("CuratorRemoveNode",tostring(nodeforpnl)) end,"No",function() end) end )
-			MenuButtonOptions:AddOption("Close", function() end )
-			MenuButtonOptions:Open()
-			return
+			if nodeforpnl then
+				local MenuButtonOptions = DermaMenu()
+				MenuButtonOptions:AddOption("Remove Node", function() Derma_Query("Are you sure you want to remove this?\nYou will recieve It's full price.","Confirmation Dialogue","Yes",function() RunConsoleCommand("CuratorRemoveNode",tostring(nodeforpnl)) end,"No",function() end) end )
+				MenuButtonOptions:AddOption("Close", function() end )
+				MenuButtonOptions:Open()
+				return
+			end
 		end
     end
 end 
@@ -729,11 +753,11 @@ local ThiefStealingHelp = {"This is your stealing progress bar area;",
 local ThiefTimerHelp = {"This is the round timer, a round", 
 "is 10 minutes long, normally."}
 
-usermessage.Hook("OpenHelp",function(um)
+local function OpenHalps(CurTab)
 	local ply = LocalPlayer()
 	if not ply.Open then
 		ply.Open = true
-		if ply:GetNWBool("Curator") or util.tobool(um:ReadLong()) then
+		if ply:GetNWBool("Curator") or CurTab then
 			HelpMenu("Curator")
 		else
 			HelpMenu()
@@ -816,6 +840,24 @@ usermessage.Hook("OpenHelp",function(um)
 		hook.Remove("HUDPaint","CuratorHUDPaintHelp")
 		if ply.DHelp and ValidEntity(ply.DHelp) then HelpMenu() else ply.DHelp = nil end
 	end
+end
+
+local function DoCoolStuffWithValid(func,...)
+	if LocalPlayer():IsValid() then
+		func(...)
+	else
+		timer.Simple(1,DoCoolStuffWithValid,func,...)
+	end
+end
+
+usermessage.Hook("OpenHelp",function(um)
+	local ply = LocalPlayer()
+	local CurTab = util.tobool(um:ReadLong())
+	if not ply:IsValid() then
+		timer.Simple(1,DoCoolStuffWithValid,OpenHalps,CurTab)
+	else
+		OpenHalps(CurTab)
+	end
 end)
 
 local CuratorHelpCategories = {}
@@ -836,29 +878,59 @@ CuratorHelpCategories["Controls"] = {"Controls:",
 "Shift - Toggle Between Cursor Mode and Freelook Mode",
 "[ Or N - Rotate an object attached to your mouse",
 "] Or M - Rotate an object attached to your mouse in the opposite direction",
+"Spawn Menu Key - Hold to enable Freelook Mode (can be used in conbination with shift)",
 "F1 - Open/Close Help HUD/Menu (But you already knew that, right?)"}
 CuratorHelpCategories["Spawning Objects"] = {"How to spawn an object:",
 "",
 "1. Click on the item's spawn icon.",
 "2. Position the object in the world using your mouse.",
-"3. Use [ and ] to rotate the object if desired.",
+"3. Use [ (or N) and ] (or M) to rotate the object if desired.",
 "4. Left click to spawn the object."}
+CuratorHelpCategories["Security Devices"] = {"Laser Grid:",
+"- detects anything that passes across it's grid",
+"",
+"Pressure Plate:",
+"- detects thieves who stand upon it",
+"",
+"Turret:",
+"- Shoots thr nearest thief in its sight",
+"",
+"Security Guard:",
+"- Read his specific help section",
+"",
+"Guard Movement Node:",
+"- See \"The Guard\" help section",
+"",
+"Laser Emitter:",
+"- A player who crosses its beam becomes closer to detection",
+"",
+"Survailance Camera:",
+"- A camera that detects players within it's field of view,",
+"   projects a cone of light for visibility when spawned"}
+CuratorHelpCategories["The Guard"] = {"The Guard Security Object:",
+"",
+"- Will grant some happiness due to his comforting effect on your patrons",
+"- Will walk between nodes you may place for a small fee but on un-ai-noded maps", 
+"   he may have trouble navigating between them. Ensure all noddes are within",
+"   their \"arms\" distance from another node",
+"- Has a detection power higher than any other security device, he's like a moving",
+"   defensive security camera, but 3x mroe powerful or so."}
 CuratorHelpCategories["Advanced"] = {"Advanced Gameplay Information:",
 "",
 "- You can right click on an object to get a popup menu of ",
 "   options for it.",
-"- These options are Remove, Move, if it's a secutity item, Harden, and Close.",
-"- Remove removes the object and returns 25% of its original cost to you.",
-"- Move allows you to move the object. It attaches the object to your cursor",
+"- These options are Remove, Move, if it's a secutity item - Harden, and Close.",
+"- \"Remove\" removes the object and returns 25% of its original cost to you.",
+"- \"Move\" allows you to move the object. It attaches the object to your cursor",
 "   as if you were spawning an object normally. Once you have clicked on a",
 "   location, a ghost will appear at that location, and the object itself",
 "   will move there in 7 seconds.",
-"- Harden allows you to harden the device's electronics, thus protecting",
-"   it form EMP effects. (This is still WIP and does not do anything)",
-"- Close closes the menu.",
+"- \"Harden\" allows you to harden the device's electronics, thus protecting",
+"   it form EMP effects.",
+"- \"Close\" closes the menu.",
 "",
-"- Gamemode Thread: http://www.facepunch.com/showthread.php?t=821918",
-"- Gamemode Coding Competition Entry, Sept/Oct. 2009",
+"- Right clicking when you have a ghost out cancels the operation",
+"",
 "- By LevyBreak (And The Curator Spawn Menu by Find Me)"}
 
 local ThiefHelpCategories = {}
@@ -888,15 +960,16 @@ ThiefHelpCategories["The Shop"] = {"The Shop:",
 "- You can right click on an item to see more detailed information on it."}
 ThiefHelpCategories["Weapon List"] = {"Pocket EMP:",
 "",
-"- Left Click Activates, temporarily disables any (unhardened) security within a 700 unit radius.",
+"- Left Click Throws, temporarily disables any (unhardened) security within a 700 unit radius.",
+"- Right Click uses it where you are standing",
 "- Single Use Only",
 "",
 "Grappling Hook:",
 "",
 "- Primary Fire Throws the hook, it only latches onto areas your HUD shows with a green O.",
 "- Alternate Fire Retrieves the hook so you can throw it again.",
-"- Once hooked, hold Shift-W to be drawn in. The farther away you are, the more force you are draw in with.",
-"- Swinging can be a good strategy if you do not have enough space to simply over-speed up.",
+"- Once hooked, hold Shift-W to be drawn in.",
+"- You will be drawn to the top of the hook, so try to get it on the top of a ledge.",
 "",
 "Crowbar:",
 "- Does not hurt other players, just a required item for some events.",
@@ -909,7 +982,7 @@ ThiefHelpCategories["Weapon List"] = {"Pocket EMP:",
 ThiefHelpCategories["Events"] = {"Events are triggers placed into the map by the mapper",
 "that trigger actions in the map (like opening a door) when the user has",
 "the required items.",
-"If you press use on it and do nto have the required items, you will be told.",
+"If you press use on it and do not have the required items, you will be told.",
 "If you use it and it has already been used this round, you will be told.",
 "If you use it and have the proper items it will activate."}
 ThiefHelpCategories["Advanced"] = {"Useful Tactics at the Thief:",
@@ -923,11 +996,9 @@ ThiefHelpCategories["Advanced"] = {"Useful Tactics at the Thief:",
 "   game for 60 seconds.",
 "- In the event you are arrested, you spectate the Curator, so you can inform your friends of his plans!",
 "- There is no substitute for experience. There is no 'I-Win' item to buy.",
-"- The Curator gets 10% liquid for all art he has remaining at the end fo the round times the number of ",
-"   thieves there are. Take this into account before thinking you cannot lose.",
+"- The Curator gets 10% times the number of thieves there are cash as liquid for all art he has ",
+"   remaining at the end of the round Take this into account before thinking you cannot lose.",
 "",
-"- Gamemode Thread: http://www.facepunch.com/showthread.php?t=821918",
-"- Gamemode Coding Competition Entry, Sept/Oct. 2009",
 "- By LevyBreak (And The Curator Spawn Menu by Find Me)"}
 
 function HelpMenu(deftab)
@@ -1024,6 +1095,7 @@ local function FadingShouldCollide(e1,e2)
 end
 hook.Add("ShouldCollide","CuratorFadingShouldCollide",FadingShouldCollide)
 
+
 local Vec = FindMetaTable("Vector")
 
 function Vec:IsInLadder()
@@ -1042,40 +1114,16 @@ function Vec:IsPosInBounds(maxvals,offset)
 	return false
 end 
 
--- Almost over 1000 lines of cl_init.lua!
--- Maybe I can just comment in these last 30 lines?
--- Is that possible?
--- I mean, 30 lines of nothing by comments?
--- I can try, I suppose.
--- So, How to begin...
--- I think I'll do some credits.
--- Detailed ones.
--- I thank:
--- Find Me for the following:
---  The Curator Spawn Menu
---  The Thief Q Menu (Slightly Modified)
---  The Server Half of the Round Timer System (Slightly Modified)
--- Google, for icons and textures.
--- Myself, for everything else.
--- I know, it may seem impossible;
--- But yes, this was only done in a month.
--- Including Find Me's Part.
--- Seriously, it was.
--- And it's all either his or my code.
--- It's all original code you haters!
--- Aside from the redistributable datastream fix...
--- I suppose i should thank Lexic (I think) for that.
--- Not sure why I include it since I don't sue datastream anywhere.
--- I gues it was incase I did, lol.
--- I hope some of my convinience functions in this will be useful to some people.
--- Really, I do.
--- Being useful is fun. And nice.
--- Did you know? I'm a Boy Scout. And only in high school
--- (Algebra 2) to boot.
--- That bezier crap took a long time for me to think
--- up the first interation of.
--- Haha! W00t! 1000 lines!
--- So, about that EMP effect... cool, isn't it? Made the texture myself, too.
--- Well, it's going beyond 1000 lines thanks to additions to the help stuff.
--- So now the "Haha! W00t! 1000 lines!" line isn't on line 1000.
--- Didn't expect it to last that long.
+local OldFuncThing = GAMEMODE.ShowGamemodeChooser
+
+function GM:ShowGamemodeChooser()
+	local ply = LocalPlayer()
+	if ply.DHelp then ply.DHelp:Close() ply.DHelp = nil end
+	if CMenu then CMenu:Close() CMenu = nil end
+	hook.Remove("HUDPaint","CuratorHUDPaintHelp")
+	hook.Remove("HUDPaint","AlarmWarning")
+	hook.Remove("HUDPaint","Arrested")
+	hook.Remove("HUDPaint","Freed")
+	hook.Remove("HUDPaint","Stealing")
+	OldFuncThing()
+end

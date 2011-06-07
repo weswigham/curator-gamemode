@@ -1,7 +1,0 @@
-ENT.Type 			= "anim"
-ENT.Base 			= "base_anim"
-ENT.PrintName		= "Laser Emitter/Reciever"
-ENT.Author			= "Levybreak"
-ENT.Contact 		= "Facepunch"
-ENT.Purpose			= ""
-ENT.Instructions	= "Lasers? What is this you say?" 

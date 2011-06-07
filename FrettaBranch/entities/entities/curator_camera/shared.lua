@@ -1,7 +1,0 @@
-ENT.Type 			= "anim"
-ENT.Base 			= "base_anim"
-ENT.PrintName		= "Security Camera"
-ENT.Author			= "Levybreak"
-ENT.Contact 		= "Facepunch"
-ENT.Purpose			= ""
-ENT.Instructions	= "Security Camera" 

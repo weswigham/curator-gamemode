@@ -156,7 +156,7 @@ function CHATCMD:Run( ply, ... )
 	if not GAMEMODE.ActiveVoting then
 		local OnPass = function() 
 			PrintMessage( HUD_PRINTTALK,"The vote to start a new round has passed!")
-			GAMEMODE.Curator = nil
+			hook.Call("RoundStarted")
 		end
 		local OnFail = function() 
 			PrintMessage( HUD_PRINTTALK,"The vote to start a new round has failed!")

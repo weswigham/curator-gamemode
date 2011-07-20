@@ -537,20 +537,6 @@ function GM:GUIMousePressed(mc)
 			MenuButtonOptions:Open()
 			return
 		end
-		local nodeforpnl = nil
-		for k,v in pairs(LocalPlayer().NodePositions) do
-			if v:Distance(tr.HitPos) <= 7 then
-				nodeforpnl = v
-				break
-			end
-		end
-		if nodeforpnl then
-			local MenuButtonOptions = DermaMenu()
-			MenuButtonOptions:AddOption("Remove Node", function() Derma_Query("Are you sure you want to remove this?\nYou will recieve It's full price.","Confirmation Dialogue","Yes",function() RunConsoleCommand("CuratorRemoveNode",tostring(nodeforpnl)) end,"No",function() end) end )
-			MenuButtonOptions:AddOption("Close", function() end )
-			MenuButtonOptions:Open()
-			return
-		end
     end
 end 
 
@@ -647,7 +633,7 @@ concommand.Add("OpenEndGameWindow", function()
 	hook.Remove("HUDPaint","Arrested")
 	hook.Remove("HUDPaint","AlarmWarning")
 	WorldSound("TV.Tune",ply:GetPos(),165,100)
-	LocalPlayer().NodePositions = nil
+	LocalPlayer().NodePositions = {}
 end)
 
 concommand.Add("CloseEndGameWindow", function()
@@ -882,7 +868,7 @@ ThiefHelpCategories["Controls"] = {"Controls:",
 "F1 - Open/Close Help HUD/Menu (But you already knew that, right?)"}
 ThiefHelpCategories["The Shop"] = {"The Shop:",
 "",
-"- Is the washing machine near your spawn.",
+"- Is the seedy guy near your spawn.",
 "- Press your 'Use' key on it to use it. (Duh)",
 "- The top is items for sale, the bottom is items you have",
 "- You can right click on an item to see more detailed information on it."}

@@ -14,7 +14,7 @@ function ENT:Initialize()
 	end
 	
 	self:TemporarilyDisable()
-
+	self:SetCollisionGroup(COLLISION_GROUP_WORLD)
 end
 
 local DownAmt = Vector(0,0,-10)

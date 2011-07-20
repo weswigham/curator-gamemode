@@ -44,22 +44,22 @@ end
 function SWEP:Think()
 	if SERVER then
 		if (not self.ShieldEnt) and (not self.Off) then
-			self.ShieldEnt = ents.Create("prop_physics")
+			self.ShieldEnt = ents.Create("thief_shield")
 			self.ShieldEnt:SetModel(self.ShieldModel)
 			self.ShieldEnt.Fading = true --It's like automatically disabling collisions with players, fweeeeee
-			self.ShieldEnt:SetPos(self.Owner:GetShootPos()+(self.Owner:GetAimVector()*50))
-			self.ShieldEnt:SetAngles(self.Owner:GetAngles())
+			self.ShieldEnt:SetDestPos(self.Owner:GetShootPos()+(self.Owner:GetAimVector()*50))
+			self.ShieldEnt:SetDestAng(self.Owner:GetAngles())
 			self.ShieldEnt:SetColor(255,255,255,50)
 			self.ShieldEnt:Spawn()
 			self.ShieldEnt:Activate()
-			self.ShieldEnt:GetPhysicsObject():EnableMotion(false)
+			--self.ShieldEnt:GetPhysicsObject():EnableMotion(false)
 			self.Owner:SendLua("Entity("..self.ShieldEnt:EntIndex()..").Fading = true")
 		elseif self.ShieldEnt and self.Off then
 			self.ShieldEnt:Remove()
 			self.ShieldEnt = nil
 		elseif self.ShieldEnt then
-			self.ShieldEnt:SetPos(self.Owner:GetShootPos()+(self.Owner:GetAimVector()*50))
-			self.ShieldEnt:SetAngles(self.Owner:GetAngles())
+			self.ShieldEnt:SetDestPos(self.Owner:GetShootPos()+(self.Owner:GetAimVector()*50))
+			self.ShieldEnt:SetDestAng(self.Owner:GetAngles())
 		end
 		
 	end

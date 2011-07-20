@@ -1,10 +1,17 @@
 
 include('shared.lua')
-
-function ENT:OnRemove()
-	
-end 
+--[[
+function ENT:Initialize()
+	self:SetUseType(SIMPLE_USE)
+end]]
 
 function ENT:Draw()
-	self.Entity:DrawModel()
-end 
+	self:DrawModel()
+end
+ 
+
+function ENT:DrawTranslucent()
+
+	self:Draw()
+ 
+end

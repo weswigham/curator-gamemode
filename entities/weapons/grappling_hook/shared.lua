@@ -84,7 +84,7 @@ function SWEP:PrimaryAttack()
     if CLIENT then return end
     
     if not self.RopeKey then
-        GAMEMODE:SetPlayerAnimation(self.Owner, PLAYER_ATTACK1)
+        GAMEMODE:DoAnimationEvent(self.Owner, PLAYERANIMEVENT_ATTACK_PRIMARY)
         
         local ply = self.Owner
         

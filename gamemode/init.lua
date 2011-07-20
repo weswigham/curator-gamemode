@@ -39,7 +39,7 @@ function GM:Initialize()
 
 end
 
-local function CurInitPostEntity()
+--[[local function CurInitPostEntity()
 	timer.Simple(10,function()
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do
 		local ent = ents.Create("thief_shop")
@@ -48,12 +48,14 @@ local function CurInitPostEntity()
 	end
 	end)
 end
-hook.Add("InitPostEntity","CuratorInitPostEntity",CurInitPostEntity)
+hook.Add("InitPostEntity","CuratorInitPostEntity",CurInitPostEntity)]]
 
 local function KeyPressed(ply, code)
 	if (not ply:GetNWBool("Curator")) and code == IN_USE then
 		local tr = util.QuickTrace(ply:GetShootPos(),ply:GetAimVector()*200,ply)
-		if tr.Hit and (not tr.HitSkybox) then
+		if tr.Entity and tr.Entity:IsValid() and tr.Entity:GetClass() == "thief_shop" then
+			SendUserMessage("OpenThiefBuyMenu",ply)
+		elseif tr.Hit and (not tr.HitSkybox) then
 			for k,v in ipairs(ents.FindByClass("trigger_event")) do
 				if v:IsPosInBounds(tr.HitPos) and not v.UsedAlready then
 					if ply:HasItems(v.ReqItems) then
@@ -137,7 +139,7 @@ function GM:ArrestPlayer(ply)
 		for k,v in pairs(ply.ItemList) do
 			if v.Entity then
 				ply:ChatPrint("The "..v.Item:GetName().." you stole has been removed from your inventory because of death!")
-				v.Entity:StopFade()
+				if v.Entity and v.Entity.StopFade then v.Entity:StopFade() end
 				table.insert(ToRemove,k)
 			end
 		end
@@ -326,7 +328,7 @@ function GM:TriggerAlarm(sndPos)
 end
 
 function GM:StealArt(ply,ent,item)
-	if #ply:GetItems() < 5 then
+	if (not self.GraceTime) and #ply:GetItems() < 5 then
 		if ent.Fade then ent:Fade(3) end
 		ply:Lock()
 		SendUserMessage("StealingProgressBar",ply)
@@ -345,7 +347,7 @@ function GM:Think()
 		self.Curator:SetNoDraw(true)
 	elseif #player.GetAll() >= 1 then
 		RoundTimer.CurrentTime = RoundTimer.RoundTime
-		self:RoundBegin()
+		hook.Call("RoundStarted")
 	else
 		self.Curator = nil
 	end
@@ -399,15 +401,36 @@ function GM:ResetMap()
 	game.CleanUpMap()
 end
 
-function table.WeightedRandom(tbl,weights)
-	local selectTbl = {}
+function table.WeightedRandom(weights)
+	--[[local selectTbl = {}
 	for k,v in pairs(tbl) do
 		for i=1,(weights[v] or 1) do
 			table.insert(selectTbl,v)
 		end
 	end
-	return table.Random(selectTbl)
+	return table.Random(selectTbl)]]
+	local winner = {}
+	for k,v in pairs(weights) do
+		if k ~= "__mode" then
+			if (not winner[1]) or v>=weights[winner[1]] then
+				table.insert(winner,k)
+			end
+		end
+	end
+	return table.Random(winner)
 end
+--[[
+function table.Random (t)
+  debug.Trace()
+  PrintTable(t)
+  local rk = math.random( 1, table.Count( t ) )
+  local i = 1
+  for k, v in pairs(t) do
+    if ( i == rk ) then return v end
+    i = i + 1
+  end
+
+end]]
 
 function GM:RoundBegin()
 	self.GraceTime = true
@@ -422,8 +445,11 @@ function GM:RoundBegin()
 		v.ItemList = {}
 		v:SendItems()
 	end
+	local old = self.Curator
+	if old and old:IsValid() then SelectionWeights[old] = 0 end
 	self.Curator = nil
-	self.Curator = table.WeightedRandom(player.GetAll(),SelectionWeights)
+	self.Curator = table.WeightedRandom(SelectionWeights)
+	if old and old:IsValid() then SelectionWeights[old] = 1 old:SetDeaths(SelectionWeights[old]) end
 	self.Curator:SetDeaths(SelectionWeights[self.Curator])
 	SelectionWeights[self.Curator] = 0
 	self.Curator:SetNWBool("Curator",true)
@@ -559,22 +585,32 @@ concommand.Add("CuratorMoveDone",function(ply,cmd,args)
 	local ent = ents.GetByIndex(args[1])
     local ang = Angle(FixStrings(unpack(string.Explode(" ",args[2]))))
     local pos = Vector(FixStrings(unpack(string.Explode(" ",args[3]))))
-	if ply == GAMEMODE.Curator and ent and ent:IsValid() and string.find(ent:GetClass(),"curator_") then
-		local temp = ents.Create("prop_physics")
-		temp:SetModel(ent:GetModel())
-		temp:SetPos(pos)
-		temp:SetAngles(ang)
-		temp:Spawn()
-		temp:Activate()
-		temp:SetColor(255,255,255,100)
-		temp:GetPhysicsObject():EnableMotion(false)
-		timer.Simple(7,function(temp,ent,pos,ang) 
-			temp:Remove()
-			if ent and ent:IsValid() then
-				ent:SetPos(pos)
-				ent:SetAngles(ang)
-			end
-		end,temp,ent,pos,ang)
+	if not pos:IsInMuseum() then
+		ply:ChatPrint("You cannot move that object outside the museum!")
+	elseif ply == GAMEMODE.Curator and ent and ent:IsValid() and string.find(ent:GetClass(),"curator_") then
+		trace.start = pos
+		trace.endpos = pos+Down
+		trace.mask = MASK_SOLID_BRUSHONLY
+		local tr = util.TraceLine(trace)
+		if tr.Hit and tr.HitWorld then 
+			local temp = ents.Create("prop_physics")
+			temp:SetModel(ent:GetModel())
+			temp:SetPos(pos)
+			temp:SetAngles(ang)
+			temp:Spawn()
+			temp:Activate()
+			temp:SetColor(255,255,255,100)
+			temp:GetPhysicsObject():EnableMotion(false)
+			timer.Simple(7,function(temp,ent,pos,ang) 
+				if temp and temp:IsValid() then temp:Remove() end
+				if ent and ent:IsValid() then
+					ent:SetPos(pos)
+					ent:SetAngles(ang)
+				end
+			end,temp,ent,pos,ang)
+		else
+			ply:ChatPrint("You cannot place that so far off the ground, the building inspector forbids it.")
+		end
 	else
 		ply:ChatPrint("You cannot move that object!")
 	end
@@ -627,18 +663,6 @@ concommand.Add("CuratorHardenSecurity",function(ply,cmd,arg)
 		ply:ChatPrint("You can't harden that!")
 	end
 end)
-
-concommand.Add("CuratorRemoveNode",function(ply,cmd,arg)
-	local pos = Vector(FixStrings(unpack(string.Explode(" ",arg[1]))))
-	for k,v in ipairs(ents.FindInSphere(pos,2)) do
-		if v:GetClass() == "guard_node" then
-			ply:SetNWInt("money",ply:GetNWInt("money")+v.Item:GetPrice())
-			v:Remove()
-			break
-		end
-	end
-end)
-
 
 hook.Add("RoundStarted","CuratorRoundStart",function() 
 	for k,v in ipairs(ents.FindByClass("info_round_info")) do

@@ -82,7 +82,7 @@ function Player:BuyItem(name)
 			else
 				self:SetNWInt("money",self:GetNWInt("money")-item:GetPrice())
 				table.insert(self.ItemList,{Item=item})
-				self:ChatPrint("You've sucessfully bought a "..item:GetName().."!")
+				self:ChatPrint("You've sucessfully purchased a/an "..item:GetName().."!")
 				if item:GetOnSpawnFunc() then item:OnSpawn(self) end
 			end
 		else

@@ -5,6 +5,13 @@ local Red = Color( 255, 0, 0, 255 )
 
 ENT.AutomaticFrameAdvance = true 
 
+function ENT:Initialize()
+	
+	self.BaseClass.Initialize(self)
+	self:SetCollisionGroup(COLLISION_GROUP_WORLD)
+	
+end
+
 function ENT:OnRemove()
 	
 end 

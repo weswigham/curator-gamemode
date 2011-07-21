@@ -15,6 +15,8 @@ function ENT:Initialize()
 	self.Num = 10
 	
 	self:TemporarilyDisable()
+	
+	self:SetCollisionGroup(COLLISION_GROUP_WEAPON) -- to replace ShouldCollide
 end
 
 function ENT:Think()

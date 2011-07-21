@@ -30,15 +30,17 @@ local zeroAng = Angle(0,0,0)
 
 function Junk.MakeStandardSpawnFunc(class)
 	local func = function(item,ply,pos,ang) 
-		local ent = ents.Create(class)
-		ent:SetPos(pos)
-		ent:SetAngles(ang)
-		ent.Item = item:CopyTo(GetNewItemObject())
-		ent.IType = "Junk"
-		ent:SetModel(item:GetModel())
-		ent:Spawn()
-        AccessorFunc(ent,"t_pOwner","Player")
-        ent:SetPlayer(ply)
+		if item and ply and pos and ang then
+			local ent = ents.Create(class)
+			ent:SetPos(pos)
+			ent:SetAngles(ang)
+			ent.Item = item:CopyTo(GetNewItemObject())
+			ent.IType = "Junk"
+			ent:SetModel(item:GetModel())
+			ent:Spawn()
+			AccessorFunc(ent,"t_pOwner","Player")
+			ent:SetPlayer(ply)
+		end
 	end
 	return func
 end

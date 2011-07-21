@@ -44,6 +44,7 @@ function ENT:Fade(dur)
 	self.FadeStartTime = CurTime()
 	self.FadeEndTime = CurTime() + dur
 	self.Fading = true
+	self:SetCollisionGroup(COLLISION_GROUP_WEAPON) -- to replace ShouldCollide
 end 
 
 function ENT:StopFade()
@@ -51,4 +52,5 @@ function ENT:StopFade()
 	self.FadeStartTime = nil
 	self.FadeEndTime = nil
 	self:SetColor(255,255,255,255)
+	self:SetCollisionGroup(COLLISION_GROUP_COLLISION_GROUP_INTERACTIVE) -- to replace ShouldCollide
 end 

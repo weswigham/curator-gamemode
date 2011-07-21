@@ -15,6 +15,8 @@ function ENT:Initialize()
 	
 	self:TemporarilyDisable()
 	
+	self:SetCollisionGroup(COLLISION_GROUP_WEAPON) -- to replace ShouldCollide
+	
 end
 
 local minz = Vector(-2,-2,-2)

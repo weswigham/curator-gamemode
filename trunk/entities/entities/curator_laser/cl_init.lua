@@ -24,4 +24,6 @@ function ENT:Initialize()
 	if LocalPlayer():GetNWBool("Curator") then
 		RunConsoleCommand("CuratorUpdateEnt",self:EntIndex())
 	end
+	
+	self:SetCollisionGroup(COLLISION_GROUP_WEAPON) -- to replace ShouldCollide
 end 

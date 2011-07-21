@@ -47,15 +47,15 @@ end
 function Player:SellItem(index)
 	if not self.ItemList[tonumber(index)] then self:ChatPrint("Wait, you don't have anything in that item slot...Must be a transfer glitch. Try Opening Q and Closing it.") return end
 	
+	if self.ItemList[tonumber(index)].Entity and self.ItemList[tonumber(index)].Entity:IsValid() then self.ItemList[tonumber(index)].Entity:Remove() end 
+	
+	if self.ItemList[tonumber(index)].Item:GetOnRemoveFunc() then self.ItemList[tonumber(index)].Item:OnRemove(self) end
+	
 	if Thief.GetItem(self.ItemList[tonumber(index)].Item:GetName()) then -- we don't know people glitching money, now do we?
 		self:SetNWInt("money",math.ceil(self:GetNWInt("money")+math.floor(self.ItemList[tonumber(index)].Item:GetPrice())))
 	else
 		self:SetNWInt("money",math.ceil(self:GetNWInt("money")+math.floor(self.ItemList[tonumber(index)].Item:GetPrice()*2)))
 	end
-	
-	if self.ItemList[tonumber(index)].Entity then self.ItemList[tonumber(index)].Entity:Remove() end 
-	
-	if self.ItemList[tonumber(index)].Item:GetOnRemoveFunc() then self.ItemList[tonumber(index)].Item:OnRemove(self) end
 	
 	table.remove(self.ItemList,tonumber(index))
 end

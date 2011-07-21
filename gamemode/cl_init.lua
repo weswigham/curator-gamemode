@@ -1000,7 +1000,7 @@ function HelpMenu(deftab)
 		ply.DHelp = nil
 	end
 end
-
+--[[
 local function FadingShouldCollide(e1,e2)
 	if (e1:IsPlayer() or e2:IsPlayer()) and (string.find(e1:GetClass(),"hook") or string.find(e2:GetClass(),"hook")) then
 		return false
@@ -1008,7 +1008,7 @@ local function FadingShouldCollide(e1,e2)
 		return true
 	end
 end
-hook.Add("ShouldCollide","CuratorFadingShouldCollide",FadingShouldCollide)
+hook.Add("ShouldCollide","CuratorFadingShouldCollide",FadingShouldCollide)]]
 
 local Vec = FindMetaTable("Vector")
 

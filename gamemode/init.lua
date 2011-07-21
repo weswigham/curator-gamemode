@@ -486,7 +486,7 @@ function GM:RoundBegin()
 	end
 	)
 end
-
+--[[
 local function FadingShouldCollide(e1,e2)
 	if ((e1:IsPlayer() or e2:IsPlayer()) and (e1.Fading or e2.Fading)) or (e1:IsPlayer() and e2:IsPlayer()) then
 		return false
@@ -494,7 +494,7 @@ local function FadingShouldCollide(e1,e2)
 		return true
 	end
 end
-hook.Add("ShouldCollide","CuratorFadingShouldCollide",FadingShouldCollide)
+hook.Add("ShouldCollide","CuratorFadingShouldCollide",FadingShouldCollide)]]
 
 function GM:PlayerSwitchFlashlight(ply,switch)
 	if ply ~= self.Curator then return true end

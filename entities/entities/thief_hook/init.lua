@@ -18,6 +18,8 @@ function ENT:Initialize()
 	self.MoveRopeName = ""
 	self.RopeName = ""
 	self.Player = nil
+	
+	self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE_DEBRIS)
 end
 
 function ENT:Think()

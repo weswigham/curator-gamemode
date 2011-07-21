@@ -28,20 +28,22 @@ end
 
 function Security.MakeStandardSpawnFunc(class)
 	local func = function(item,ply,pos,ang) 
-		local ent = ents.Create(class)
-		ent:SetPos(pos)
-		ent:SetAngles(ang)
-		ent.Item = item:CopyTo(GetNewItemObject())
-		ent.IType = "Security"
-		ent:SetModel(item:GetModel())
-		ent:Spawn()
-		if class ~= "curator_turret" then
-			ent.Fading = true
+		if item and ply and pos and ang then
+			local ent = ents.Create(class)
+			ent:SetPos(pos)
+			ent:SetAngles(ang)
+			ent.Item = item:CopyTo(GetNewItemObject())
+			ent.IType = "Security"
+			ent:SetModel(item:GetModel())
+			ent:Spawn()
+			--if class ~= "curator_turret" then
+				--ent.Fading = true
+			--end
+			AccessorFunc(ent,"t_pOwner","Player")
+			ent:SetPlayer(ply)
+			
+			return ent
 		end
-        AccessorFunc(ent,"t_pOwner","Player")
-        ent:SetPlayer(ply)
-		
-		return ent
 	end
 	return func
 end
